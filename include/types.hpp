@@ -4,17 +4,17 @@
 #include <vector>
 #include <memory>
 
-namespace ip
+namespace imp
 {
-    using U8 = unsigned char;
+    /*using U8 = unsigned char;
     using U16 = unsigned short;
     using S8 = signed char;
     using S16 = signed short;
     using S32 = signed int;
     using F32 = float;
-    using F64 = double;
+    using F64 = double;*/
 
-    enum channel
+    enum 
     {
         GRAY = 1,
         GRAYA = 2,
@@ -22,11 +22,12 @@ namespace ip
         RGBA = 4 
     };
 
-    struct Pixel
+    enum RGBComponents
     {
-        int depth;
-        int channels;   
-
+        RED,
+        GREEN,
+        BLUE
     };
+
 }
 #endif /* TYPES_HPP */
