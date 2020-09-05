@@ -8,7 +8,7 @@ Mat::Mat()
 }
 
 Mat::Mat(int rows, int cols, int depth, int channels):
-    depth_(depth), channels_(channels), size_(Size(cols + 1, rows + 1)), rows_(rows), cols_(cols)
+    depth_(depth), channels_(channels), size_(Size(cols, rows)), rows_(rows), cols_(cols)
 {
     data_ = new unsigned char[size_.width * size_.height * channels_];
 }
