@@ -22,8 +22,29 @@ bool JPEGDecoder::open(std::string& filename)
     }
     filename_ = filename;
 
-    return true;
+    uint8_t byte;
+    while(imgfile_ >> std::noskipws >> byte)
+    {
+        if(byte == JPEG_BYTE_FF)
+        {
+            imgfile_ >> std::noskipws >> byte;
+            
+            ResultCode code = parseSegmentInfo(byte);
 
+            if(code != ResultCode::SUCCESS)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    decodeData();
+
+    return true;
 }
 
 unsigned char* JPEGDecoder::getRawData()
@@ -128,6 +149,41 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(uint16_t byte)
     }
 
     return ResultCode::SUCCESS;
+}
+
+void JPEGDecoder::parseAPP0()
+{
+
+}
+
+void JPEGDecoder::parseCOM()
+{
+
+}
+
+void JPEGDecoder::parseDQT()
+{
+
+}
+
+void JPEGDecoder::parseSOF0()
+{
+
+}
+
+void JPEGDecoder::parseDHT()
+{
+
+}
+
+void JPEGDecoder::parseSOS()
+{
+
+}
+
+void JPEGDecoder::decodeData()
+{
+
 }
 
 }

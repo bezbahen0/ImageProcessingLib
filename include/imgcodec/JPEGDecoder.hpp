@@ -2,8 +2,10 @@
 #define JPEGDECODER_HPP
 
 #include <ifstream>
+#include <array>
 
 #include "IDecoder.hpp"
+#include "include/types.hpp"
 
 namespace imp
 {
@@ -30,8 +32,12 @@ private:
     ResultCode parseSegmentInfo(uint16_t byte);
 
     void parseAPP0();
+
+    /// comment segment parse
     void parseCOM();
 
+
+    /// comment segment parse
     /// Quantialize table
     void parseDQT();
 
@@ -42,10 +48,16 @@ private:
     void parseDHT();
 
     /// Start of Scan
-    void parseSOS();
+    /// contains channels on image
+    void parseSOS(); 
+
+    /// decode encodeing data 
+    void decodeData();
 
     std::string filename_;
     std::ifstream imgfile_;
+
+    std::array<std::array<uint16_t, 8>, 8> Qtable_;
 
 
 };

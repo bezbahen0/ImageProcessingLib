@@ -11,7 +11,7 @@ HuffmanTree::~HuffmanTree()
 {
 }
 
-Node* getRoot()
+Node* HuffmanTree::getRoot()
 {
     return root_;
 }

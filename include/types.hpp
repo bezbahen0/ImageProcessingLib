@@ -29,5 +29,6 @@ namespace imp
         BLUE
     };
 
+
 }
 #endif /* TYPES_HPP */
