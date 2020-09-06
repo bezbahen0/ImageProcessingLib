@@ -163,7 +163,27 @@ void JPEGDecoder::parseCOM()
 
 void JPEGDecoder::parseDQT()
 {
+    if(!imgfile_.is_open() || !imgfile_.good())
+        return;
 
+    uint16_t lenByte = 0;
+    uint8_t lenValTable;
+    uint8_t tableId;
+
+    imgfile_.read(reinterpret_cast<char*>(&lenByte), 2);
+    lenByte = htons(lenByte);
+
+    lenByte -= 2;
+
+    int precision = lenValTable >> 4;
+    int qtable = lenValTable & 0x0F;
+
+    //Qtable_.push_back({});
+    for(int i = 0; i < 64; ++i)
+    {
+        imgfile_ >> std::noskipws >> tableid;
+        Qtable_[qtable].push_back((uint16_t)tableid);
+    }
 }
 
 void JPEGDecoder::parseSOF0()
