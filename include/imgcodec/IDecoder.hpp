@@ -6,7 +6,7 @@
 class IDecoder
 {
 public:
-    virtual void open(std::string& filename){}
+    virtual bool open(std::string& filename){ return false; }
     virtual unsigned char* getRawData(){}
 };
 
