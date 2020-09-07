@@ -69,8 +69,7 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(uint16_t byte)
     }
     if else(byte == JPEG_SOF0)
     {
-        parseSOF0();
-        return ResultCode::SUCCESS;
+        return parseSOF0();
     }
     if els(byte == JPEG_DQT)
     {
@@ -186,9 +185,37 @@ void JPEGDecoder::parseDQT()
     }
 }
 
-void JPEGDecoder::parseSOF0()
+ResultCode JPEGDecoder::parseSOF0()
 {
+    uint16_t length, height, width;
+    uint8_t precision, channels;
 
+    imgfile_.read(reinterpret_cast<char*>(&length), 2);
+    imgfile_.read(reinterpret_cast<char*>(&precision), 1);
+    
+    length = htons(length);
+
+    imgfile_.read(reinterpret_cast<char*>(&height), 2);
+    imgfile_.read(reinterpret_cast<char*>(&width), 2);
+    imgfile_.read(reinterpret_cast<char*>(&channels), 1);
+
+    height = htons(height);
+    width = htons(width);
+
+    imageMetadata_.height = (int)height;
+    imageMetadata_.width = (int)width;
+    imageMetadata_.channels = (int)channels;
+
+    uint8_t id, samplingFactor, idQtable;
+    for(int i = 0; i < (int)channels; ++i)
+    {
+        imgfile_ >> std::noskipws >> id >> samplingFactor >> idQtable; 
+
+        if((samplingFactor >> 4 ) != 1 || (samplingFactor & 0x0F) != 1)
+            return ResultCode::TERMINATE;
+    }
+
+    return ResultCode::SUCCESS;
 }
 
 void JPEGDecoder::parseDHT()

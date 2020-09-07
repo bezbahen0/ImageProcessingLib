@@ -9,6 +9,12 @@
 
 namespace imp
 {
+struct ImgMeta
+{
+    int height;
+    int width;
+    int channels;
+};
 
 class JPEGDecoder : public IDecoder
 {
@@ -36,13 +42,11 @@ private:
     /// comment segment parse
     void parseCOM();
 
-
-    /// comment segment parse
     /// Quantialize table
     void parseDQT();
 
     /// Baseline DCT
-    void parseSOF0();
+    ResultCode parseSOF0();
 
     /// Huffman table
     void parseDHT();
@@ -53,6 +57,8 @@ private:
 
     /// decode encodeing data 
     void decodeData();
+
+    ImgMeta imageMetadata_;
 
     std::string filename_;
     std::ifstream imgfile_;
