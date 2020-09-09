@@ -48,7 +48,7 @@ private:
     /// Baseline DCT
     ResultCode parseSOF0();
 
-    /// Huffman table
+    /// Huffman table parse
     void parseDHT();
 
     /// Start of Scan
@@ -63,9 +63,11 @@ private:
     std::string filename_;
     std::ifstream imgfile_;
 
-    std::vector<std::vector<uint16_t>> Qtable_;
+    std::vector<std::vector<uint16_t>> qtable_;
 
-
+    /// 4 huffman tables
+    /// [type][idtable][number
+    std::array<std::pair<int, std::vector<uint8_t>>, 16> huffmanTable_[2][2]; 
 };
 
 }

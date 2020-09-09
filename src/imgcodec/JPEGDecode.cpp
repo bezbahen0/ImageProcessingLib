@@ -169,9 +169,27 @@ void JPEGDecoder::parseAPP0()
 
 void JPEGDecoder::parseCOM()
 {
+    if(!imgfile_.is_open || !imgfile_.good())
+        return;
 
+    uint16_t len;
+    imgfile_.read(reinterpret_cast<char*>(&len), 2);
+    len = htons(len);
+
+    uint8_t byte;
+    std::string comment;
+    int endPos = imgfile_.tellg() + (int)len - 2;
+    for(imgfile_.tellg() < endPos)
+    {
+        imgfile_ >> std::noskipws >> byte;
+        if(byte == JPEG_BYTE_FF)
+        {
+            return; //because 0xFF(255 in ascii this is an error)
+        }
+        comment.push_back(static_cast<char>(byte));
+    }
 }
-
+// need zigzag 
 void JPEGDecoder::parseDQT()
 {
     if(!imgfile_.is_open() || !imgfile_.good())
@@ -189,11 +207,11 @@ void JPEGDecoder::parseDQT()
     int precision = lenValTable >> 4;
     int qtable = lenValTable & 0x0F;
 
-    Qtable_.push_back({});
+    qtable_.push_back({});
     for(int i = 0; i < 64; ++i)
     {
         imgfile_ >> std::noskipws >> tableid;
-        Qtable_[qtable].push_back((uint16_t)tableid);
+        qtable_[qtable].push_back((uint16_t)tableid);
     }
 }
 
@@ -233,6 +251,26 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
 
 void JPEGDecoder::parseDHT()
 {
+    if(imgfile_.is_open() || imgfile_.good())
+        return;
+
+    uint16_t lenSeg;
+    imgfile_.read(reinterpret_cast<char*>(&lenSeg), 2);
+    lenSeg = htons(lenSeg);
+    
+    int segmentEnd = imgfile_.tellg() + (int)lenSeg - 2;
+    while(imgfile_.tellg() > segmentEnd)
+    {
+        uint8_t tableInfo;
+        imgfile_ >> std::noskipws >> tableInfo;
+        
+        int tableType = (int)((tableInfo & 0x10) >> 4);
+        int tableid = (int)(tableInfo & 0x0F);
+
+        for(int i = 0; i < 16; ++i)
+        {
+        }
+    }
 
 }
 
