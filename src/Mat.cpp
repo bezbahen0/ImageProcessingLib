@@ -54,16 +54,4 @@ unsigned char* Mat::data() const
     return data_;
 }
 
-template<typename T>
-T& Mat::at(int rows, int cols)
-{
-    return static_cast<T>(data_[rows + cols]);
-}
-
-template<typename T>
-T& Mat::at(int rows, int cols, int channels)
-{
-    return static_cast<T>(data_[channels + rows + cols]);
-}
-
 }

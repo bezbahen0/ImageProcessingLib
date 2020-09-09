@@ -35,10 +35,16 @@ public:
     unsigned char* data() const;
 
     template<typename T>
-    T& at(int rows, int cols);
+    T& at(int rows, int cols)
+    {
+        return reinterpret_cast<T&>(data_[rows + cols]);
+    }
 
     template<typename T>
-    T& at(int rows, int cols, int channels);
+    T& at(int rows, int cols, int channels)
+    {
+        return reinterpret_cast<T&>(data_[channels + rows + cols]);
+    }
 
 private:
     int cols_;

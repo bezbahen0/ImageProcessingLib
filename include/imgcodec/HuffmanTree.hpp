@@ -48,7 +48,7 @@ public:
     Node* getRoot();
 private:
     Node* root_;
-}
+};
 
 }
 

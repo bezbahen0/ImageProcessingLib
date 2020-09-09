@@ -1,4 +1,13 @@
-#include "include/imgcodec/JPEGDecoder.cpp"
+#include "include/imgcodec/JPEGDecoder.hpp"
+#include "include/imgcodec/markers.hpp"
+
+#ifdef __linux__ 
+#include <arpa/inet.h>
+#endif
+
+#ifdef __WIN32__
+#include <winsock.h>
+#endif
 
 namespace imp
 {
@@ -12,11 +21,11 @@ JPEGDecoder::~JPEGDecoder()
     imgfile_.close();
 }
 
-bool JPEGDecoder::open(std::string& filename)
+bool JPEGDecoder::open(std::string filename) 
 {
-    imgfile_.open(filename, std::io:in | std::io::binary);
+    imgfile_.open(filename, std::ios::in | std::ios::binary);
 
-    if(!imgfile_.isopen() && !imgfile_.good())
+    if(!imgfile_.is_open() && !imgfile_.good())
     {
         return false;
     }
@@ -33,17 +42,20 @@ bool JPEGDecoder::open(std::string& filename)
 
             if(code != ResultCode::SUCCESS)
             {
+                imgfile_.close();
                 return false;
             }
         }
         else
-        {
+        {   
+            imgfile_.close();
             return false;
         }
     }
 
     decodeData();
-
+    
+    imgfile_.close();
     return true;
 }
 
@@ -57,92 +69,92 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(uint16_t byte)
     {
         return ResultCode::ERROR;
     }
-    if else(byte == JPEG_APP0)
+    else if(byte == JPEG_APP0)
     {
         parseAPP0();
         return ResultCode::SUCCESS;
     }
-    if else(byte == JPEG_COM)
+    else if(byte == JPEG_COM)
     {
         parseCOM();
         return ResultCode::SUCCESS;
     }
-    if else(byte == JPEG_SOF0)
+    else if(byte == JPEG_SOF0)
     {
         return parseSOF0();
     }
-    if els(byte == JPEG_DQT)
+    else if(byte == JPEG_DQT)
     {
         parseDQT();
         return ResultCode::SUCCESS;
     }
-    if else(byte == JPEG_DHT)
+    else if(byte == JPEG_DHT)
     {
         parseDHT();
         return ResultCode::SUCCESS;
     }
-    if else(byte == JPEG_SOS)
+    else if(byte == JPEG_SOS)
     {
         parseSOS();
         return ResultCode::SUCCESS;
     }
-    if else(byte == JPEG_SOI)
+    else if(byte == JPEG_SOI)
     {
         return ResultCode::SUCCESS;
     }
-    if else(byte == JPEG_SOF1)
+    else if(byte == JPEG_SOF1)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF1)
+    else if(byte == JPEG_SOF1)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF1)
+    else if(byte == JPEG_SOF1)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF2)
+    else if(byte == JPEG_SOF2)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF3)
+    else if(byte == JPEG_SOF3)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF5)
+    else if(byte == JPEG_SOF5)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF6)
+    else if(byte == JPEG_SOF6)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF7)
+    else if(byte == JPEG_SOF7)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF9)
+    else if(byte == JPEG_SOF9)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF10)
+    else if(byte == JPEG_SOF10)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF11)
+    else if(byte == JPEG_SOF11)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF13)
+    else if(byte == JPEG_SOF13)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF14)
+    else if(byte == JPEG_SOF14)
     {
         return ResultCode::TERMINATE;
     }
-    if else(byte == JPEG_SOF15)
+    else if(byte == JPEG_SOF15)
     {
         return ResultCode::TERMINATE;
     }
@@ -167,7 +179,7 @@ void JPEGDecoder::parseDQT()
 
     uint16_t lenByte = 0;
     uint8_t lenValTable;
-    uint8_t tableId;
+    uint8_t tableid;
 
     imgfile_.read(reinterpret_cast<char*>(&lenByte), 2);
     lenByte = htons(lenByte);
@@ -177,7 +189,7 @@ void JPEGDecoder::parseDQT()
     int precision = lenValTable >> 4;
     int qtable = lenValTable & 0x0F;
 
-    //Qtable_.push_back({});
+    Qtable_.push_back({});
     for(int i = 0; i < 64; ++i)
     {
         imgfile_ >> std::noskipws >> tableid;
@@ -185,8 +197,9 @@ void JPEGDecoder::parseDQT()
     }
 }
 
-ResultCode JPEGDecoder::parseSOF0()
+JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
 {
+    //not full 
     uint16_t length, height, width;
     uint8_t precision, channels;
 

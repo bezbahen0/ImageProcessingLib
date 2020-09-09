@@ -1,7 +1,7 @@
 #ifndef JPEGDECODER_HPP
 #define JPEGDECODER_HPP
 
-#include <ifstream>
+#include <fstream>
 #include <array>
 
 #include "IDecoder.hpp"
@@ -31,8 +31,8 @@ public:
     JPEGDecoder();
     ~JPEGDecoder();
 
-    bool open(std::string& filename) override;
-    unsigned char* getRawData() override;
+    virtual bool open(std::string filename) override;
+    virtual unsigned char* getRawData() override;
 
 private:
     ResultCode parseSegmentInfo(uint16_t byte);
@@ -63,7 +63,7 @@ private:
     std::string filename_;
     std::ifstream imgfile_;
 
-    std::array<std::array<uint16_t, 8>, 8> Qtable_;
+    std::vector<std::vector<uint16_t>> Qtable_;
 
 
 };
