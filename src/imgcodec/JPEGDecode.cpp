@@ -9,6 +9,8 @@
 #include <winsock.h>
 #endif
 
+#include <exception>
+
 namespace imp
 {
 
@@ -61,6 +63,7 @@ bool JPEGDecoder::open(std::string filename)
 
 unsigned char* JPEGDecoder::getRawData()
 {
+    return nullptr;
 }
 
 JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(uint16_t byte)
@@ -169,7 +172,7 @@ void JPEGDecoder::parseAPP0()
 
 void JPEGDecoder::parseCOM()
 {
-    if(!imgfile_.is_open || !imgfile_.good())
+    if(!imgfile_.is_open() || !imgfile_.good())
         return;
 
     uint16_t len;
@@ -178,13 +181,14 @@ void JPEGDecoder::parseCOM()
 
     uint8_t byte;
     std::string comment;
-    int endPos = imgfile_.tellg() + (int)len - 2;
-    for(imgfile_.tellg() < endPos)
+    int size = (int)len - 2;
+    int endPos = (int)imgfile_.tellg() + (int)len - 2;
+    while(imgfile_.tellg() < endPos)
     {
         imgfile_ >> std::noskipws >> byte;
         if(byte == JPEG_BYTE_FF)
         {
-            return; //because 0xFF(255 in ascii this is an error)
+            throw std::runtime_error("jpeg decoder find forbidden simbol in com segment in image");
         }
         comment.push_back(static_cast<char>(byte));
     }
@@ -258,7 +262,7 @@ void JPEGDecoder::parseDHT()
     imgfile_.read(reinterpret_cast<char*>(&lenSeg), 2);
     lenSeg = htons(lenSeg);
     
-    int segmentEnd = imgfile_.tellg() + (int)lenSeg - 2;
+    int segmentEnd = (int)imgfile_.tellg() + (int)lenSeg - 2;
     while(imgfile_.tellg() > segmentEnd)
     {
         uint8_t tableInfo;
@@ -267,8 +271,31 @@ void JPEGDecoder::parseDHT()
         int tableType = (int)((tableInfo & 0x10) >> 4);
         int tableid = (int)(tableInfo & 0x0F);
 
+        uint8_t countSymbols;
+        int allSymbolCount;
+
         for(int i = 0; i < 16; ++i)
         {
+            imgfile_ >> std::noskipws >> countSymbols;
+            huffmanTable_[tableType][tableid][i].first = (int)countSymbols;
+            allSymbolCount += (int)countSymbols;
+        }
+        
+        int i = 0;
+        for(int syms = 0; syms < allSymbolCount; ++syms)
+        {
+            uint8_t code;
+            imgfile_ >> std::noskipws >> code;
+
+            if(huffmanTable_[tableType][tableid][i].first == 0)
+            {
+                while(huffmanTable_[tableType][tableid][++i].first == 0);
+            }
+
+            huffmanTable_[tableType][tableid][i].second.push_back(code);
+
+            if(huffmanTable_[tableType][tableid][i].first == huffmanTable_[tableType][tableid][i].second.size())
+                ++i;
         }
     }
 

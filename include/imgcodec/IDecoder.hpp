@@ -7,7 +7,7 @@ class IDecoder
 {
 public:
     virtual bool open(std::string filename){ return false; }
-    virtual unsigned char* getRawData(){}
+    virtual unsigned char* getRawData(){ return nullptr; }
 };
 
 #endif /* IDECODER_HPP */
