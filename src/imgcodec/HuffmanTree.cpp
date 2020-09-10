@@ -3,6 +3,10 @@
 namespace imp
 {
 
+HuffmanTree::HuffmanTree()
+{
+}
+
 HuffmanTree::HuffmanTree(const HuffmanTableType& table)
 {
     root_ = new Node(0x0000, "");
@@ -26,14 +30,14 @@ HuffmanTree::HuffmanTree(const HuffmanTableType& table)
                 leftn = getRightLevelNode(leftn);
             }
 
-            createNode(lefn);
+            createChilds(leftn);
 
             Node* ptr = getRightLevelNode(leftn);
-            leftn = left -> left;
+            leftn = leftn -> left;
 
             while(ptr != nullptr)
             {
-                createNode(ptr);
+                createChilds(ptr);
                 ptr = getRightLevelNode(ptr);
             }
         }
@@ -65,7 +69,7 @@ void HuffmanTree::clear()
 
 }
 
-Node* HuffmanTree::getRightLevelNode(const Node* node)
+Node* HuffmanTree::getRightLevelNode(Node* node)
 {
     if(node == nullptr)
         return nullptr;
@@ -96,7 +100,7 @@ Node* HuffmanTree::getRightLevelNode(const Node* node)
 
 }
 
-void createChilds(Node* node)
+void HuffmanTree::createChilds(Node* node)
 {
     if(node -> left != nullptr || node -> right != nullptr || node == nullptr)
         return;
@@ -109,7 +113,7 @@ void createChilds(Node* node)
     Node* right = new Node();
     node -> right = right;
     right -> parent = node;
-    right -> code = node -> code + "1"
+    right -> code = node -> code + "1";
 }
 
 }

@@ -297,8 +297,8 @@ void JPEGDecoder::parseDHT()
             if(huffmanTable_[tableType][tableid][i].first == huffmanTable_[tableType][tableid][i].second.size())
                 ++i;
         }
+        huffmanTree_[tableType][tableid] = HuffmanTree(huffmanTable_[tableType][tableid]);
     }
-
 }
 
 void JPEGDecoder::parseSOS()

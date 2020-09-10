@@ -44,7 +44,8 @@ struct Node
 class HuffmanTree
 {
 public:
-    HuffmanTree(const HuffmatTableType& table);
+    HuffmanTree();
+    HuffmanTree(const HuffmanTableType& table);
     ~HuffmanTree();
     
     Node* getRoot();
@@ -54,8 +55,8 @@ public:
     void clear();
 
 private:
-    Node* getRightLevelNode(const Node* node);
-    void createNode(Node* node);
+    Node* getRightLevelNode(Node* node);
+    void createChilds(Node* node);
 
     Node* root_;
 };

@@ -1,4 +1,3 @@
-A
 #ifndef JPEGDECODER_HPP
 #define JPEGDECODER_HPP
 
@@ -72,6 +71,7 @@ private:
     /// in pair int - count symbols
     ///         std::vector<uint8_t> - values codes
     HuffmanTableType huffmanTable_[2][2]; 
+    HuffmanTree huffmanTree_[2][2];
     
 };
 
