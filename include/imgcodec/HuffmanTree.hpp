@@ -3,12 +3,14 @@
 
 #include <string>
 
+#include "include/types.hpp"
+
 namespace imp
 {
 struct Node
 {
 
-    Node() : right(nullptr), left(nullptr), parent(nullptr), value(0x00), code("")
+    Node() : right(nullptr), left(nullptr), parent(nullptr), value(0x0000), code("")
     {
     }
     
@@ -42,11 +44,19 @@ struct Node
 class HuffmanTree
 {
 public:
-    HuffmanTree();
+    HuffmanTree(const HuffmatTableType& table);
     ~HuffmanTree();
     
     Node* getRoot();
+    void insert(Node* node, const uint16_t value);
+
+    bool empty();
+    void clear();
+
 private:
+    Node* getRightLevelNode(const Node* node);
+    void createNode(Node* node);
+
     Node* root_;
 };
 

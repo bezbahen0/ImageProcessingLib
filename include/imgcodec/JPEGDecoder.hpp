@@ -1,11 +1,13 @@
+A
 #ifndef JPEGDECODER_HPP
 #define JPEGDECODER_HPP
 
 #include <fstream>
-#include <array>
 
 #include "IDecoder.hpp"
+#include "HuffmanTree.hpp"
 #include "include/types.hpp"
+
 
 namespace imp
 {
@@ -69,7 +71,8 @@ private:
     /// [type][idtable][id array*id symbol count*]
     /// in pair int - count symbols
     ///         std::vector<uint8_t> - values codes
-    std::array<std::pair<int, std::vector<uint8_t>>, 16> huffmanTable_[2][2]; 
+    HuffmanTableType huffmanTable_[2][2]; 
+    
 };
 
 }

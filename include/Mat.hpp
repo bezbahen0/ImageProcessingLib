@@ -16,7 +16,7 @@ struct Size
     {
     }
 };
-
+// need overrload operator= to prevent memory leaks and implements clone function
 class Mat
 {
 

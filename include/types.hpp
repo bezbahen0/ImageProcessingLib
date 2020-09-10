@@ -29,6 +29,7 @@ namespace imp
         BLUE
     };
 
+    using HuffmanTableType = std::array<std::pair<int, std::vector<uint8_t>>, 16>;
 
 }
 #endif /* TYPES_HPP */
