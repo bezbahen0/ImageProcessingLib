@@ -9,6 +9,6 @@ int main(int argc, char* argv[])
     img.at<int>(5, 5) = 5;
     std::cout << img.at<int>(5, 5) << std::endl;
     imp::JPEGDecoder decoder;
-    decoder.open("hui.jpg");
+    decoder.open("./hui.jpg");
     return 0;
 }

@@ -56,6 +56,7 @@ private:
     /// contains channels on image
     void parseSOS(); 
 
+    void parseImgData();
     /// decode encodeing data 
     void decodeData();
 

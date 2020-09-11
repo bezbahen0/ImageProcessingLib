@@ -303,6 +303,39 @@ void JPEGDecoder::parseDHT()
 
 void JPEGDecoder::parseSOS()
 {
+    if(!imgfile_.is_open() || !imgfile_.good())
+        return;
+
+    uint16_t lenSeg;
+    imgfile_.read(reinterpret_cast<char*>(&lenSeg), 2);
+    lenSeg = htons(lenSeg);
+
+    uint8_t byte;
+    imgfile_.read(reinterpret_cast<char*>(byte), 1);
+    int channels = (int)byte;
+
+    if(channels < 1 || channels > 4)
+        throw std::runtime_error("channels on jpeg image invalid");
+
+    imageMetadata_.channels = channels;
+
+    for(int i = 0; i <  channels; ++i)
+    {
+        uint8_t idchannel, idtable;
+        imgfile_ >> std::noskipws >> idchannel >> idtable;
+    }
+
+    /// skip [00], [3F], [00]
+    for(int i = 0; i < 3; ++i)
+    {
+        imgfile_ >> std::noskipws >> byte;
+    }
+   
+    parseImgData();
+}
+
+void JPEGDecoder::parseImgData()
+{
 
 }
 
