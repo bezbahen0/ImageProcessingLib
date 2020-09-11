@@ -61,6 +61,7 @@ private:
     void decodeData();
 
     ImgMeta imageMetadata_;
+    std::string imageData_;
 
     std::string filename_;
     std::ifstream imgfile_;

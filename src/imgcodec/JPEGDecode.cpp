@@ -10,6 +10,7 @@
 #endif
 
 #include <exception>
+#include <bitset>
 
 namespace imp
 {
@@ -20,6 +21,22 @@ JPEGDecoder::JPEGDecoder()
 
 JPEGDecoder::~JPEGDecoder()
 {
+    for(auto i = qtable_.begin(); i != qtable_.end(); ++i)
+    {
+        i -> shrink_to_fit();
+    }
+    for(int i = 0; i < 2; ++i)
+    {
+        for(int j = 0; j < 2; ++j)
+        {
+            for(int k = 0; k != huffmanTable_[i][j].size(); ++k)
+            {
+                huffmanTable_[i][j][k].second.shrink_to_fit();
+            }
+            huffmanTree_[i][j].clear();
+        }
+    }
+    qtable_.shrink_to_fit();
     imgfile_.close();
 }
 
@@ -336,7 +353,27 @@ void JPEGDecoder::parseSOS()
 
 void JPEGDecoder::parseImgData()
 {
+    if(imgfile_.is_open() || imgfile_.good())
+        return;
+    
+    uint8_t byte;
+    while(imgfile_ >> std::noskipws >> byte)
+    {
+        if(byte == JPEG_BYTE_FF)
+        {
+            uint8_t prevByte = byte;
+            imgfile_ >> std::noskipws >> byte;
 
+            if(byte == JPEG_EOI)
+            {
+                return;
+            }
+            std::bitset<8> bits1(prevByte);
+            imageData_.append(bits1.to_string());
+        }
+        std::bitset<8> bits(byte);
+        imageData_.append(bits.to_string());
+    }
 }
 
 void JPEGDecoder::decodeData()
