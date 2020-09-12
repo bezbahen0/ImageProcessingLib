@@ -184,7 +184,47 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(uint16_t byte)
 
 void JPEGDecoder::parseAPP0()
 {
-
+        if (!imgfile_.is_open() || !imgfile_.good())
+            return;
+        
+        uint16_t lenByte = 0;
+        uint8_t byte = 0;
+        
+        imgfile_.read(reinterpret_cast<char *>(&lenByte), 2);
+        lenByte = htons(lenByte);
+        std::size_t curPos = imgfile_.tellg();
+        
+        imgfile_.seekg(5, std::ios_base::cur);
+        
+        uint8_t majVersionByte, minVersionByte;
+        imgfile_ >> std::noskipws >> majVersionByte >> minVersionByte;
+        
+        std::string majorVersion = std::to_string(majVersionByte);
+        std::string minorVersion = std::to_string((int)(minVersionByte >> 4));
+        minorVersion +=  std::to_string((int)(minVersionByte & 0x0F));
+        
+        uint8_t densityByte;
+        imgfile_ >> std::noskipws >> densityByte;
+        
+        std::string densityUnit = "";
+        switch(densityByte)
+        {
+            case 0x00: densityUnit = "Pixel Aspect Ratio"; break;
+            case 0x01: densityUnit = "Pixels per inch (DPI)"; break;
+            case 0x02: densityUnit = "Pixels per centimeter"; break;
+        }
+        
+        uint16_t xDensity = 0, yDensity = 0;
+        
+        imgfile_.read(reinterpret_cast<char *>(&xDensity), 2);
+        imgfile_.read(reinterpret_cast<char *>(&yDensity), 2);
+        
+        xDensity = htons(xDensity);
+        yDensity = htons(yDensity);
+        
+        uint8_t xThumb = 0, yThumb = 0;
+        imgfile_ >> std::noskipws >> xThumb >> yThumb;        
+        imgfile_.seekg(3 * xThumb * yThumb, std::ios_base::cur);
 }
 
 void JPEGDecoder::parseCOM()
