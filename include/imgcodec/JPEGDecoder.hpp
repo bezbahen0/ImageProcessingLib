@@ -36,6 +36,7 @@ public:
     virtual unsigned char* getRawData() override;
 
 private:
+    ResultCode decodeImageFile();
     ResultCode parseSegmentInfo(uint16_t byte);
 
     void parseAPP0();
@@ -74,7 +75,6 @@ private:
     ///         std::vector<uint8_t> - values codes
     HuffmanTableType huffmanTable_[2][2]; 
     HuffmanTree huffmanTree_[2][2];
-    
 };
 
 }

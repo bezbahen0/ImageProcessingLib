@@ -9,14 +9,16 @@ HuffmanTree::HuffmanTree()
 
 HuffmanTree::HuffmanTree(const HuffmanTableType& table)
 {
-    root_ = new Node(0x0000, "");
-    Node* leftn = root_ -> left;
+    root_ = std::make_shared<Node>();
+    createChilds(root_);
 
-    for(int i = 0; i < table.size(); ++i)
+    NodePtr leftn = root_ -> left;
+
+    for(int i = 0; i < 16; ++i)
     {
         if(table[i].first == 0)
         {
-            for(Node* ptr = leftn; ptr != nullptr; ptr = getRightLevelNode(leftn))
+            for(NodePtr ptr = leftn; ptr != nullptr; ptr = getRightLevelNode(ptr))
             {
                 createChilds(ptr);
             }
@@ -32,7 +34,7 @@ HuffmanTree::HuffmanTree(const HuffmanTableType& table)
 
             createChilds(leftn);
 
-            Node* ptr = getRightLevelNode(leftn);
+            NodePtr ptr = getRightLevelNode(leftn);
             leftn = leftn -> left;
 
             while(ptr != nullptr)
@@ -49,12 +51,12 @@ HuffmanTree::~HuffmanTree()
     clear();
 }
 
-Node* HuffmanTree::getRoot()
+NodePtr HuffmanTree::getRoot()
 {
     return root_;
 }
 
-void insert(Node* node, const uint16_t value)
+void insert(NodePtr node, const uint16_t value)
 {
 
 }
@@ -69,7 +71,7 @@ void HuffmanTree::clear()
 
 }
 
-Node* HuffmanTree::getRightLevelNode(Node* node)
+NodePtr HuffmanTree::getRightLevelNode(NodePtr node)
 {
     if(node == nullptr)
         return nullptr;
@@ -78,21 +80,21 @@ Node* HuffmanTree::getRightLevelNode(Node* node)
         return node -> parent -> right;
 
     int count = 0;
-    Node* tempn = node;
+    NodePtr tempn = node;
     while(tempn -> parent != nullptr && tempn -> parent -> right == tempn)
     {
         tempn = tempn -> parent;
         count++;
     }
 
-    if(tempn -> isRoot())
+    if(tempn -> isRoot()) 
         return nullptr;
     
     tempn = tempn -> parent -> right;
 
     while(count > 0)
     {
-        tempn = tempn -> right;
+        tempn = tempn -> left;
         count--;
     }
 
@@ -100,17 +102,17 @@ Node* HuffmanTree::getRightLevelNode(Node* node)
 
 }
 
-void HuffmanTree::createChilds(Node* node)
+void HuffmanTree::createChilds(NodePtr node)
 {
     if(node -> left != nullptr || node -> right != nullptr || node == nullptr)
         return;
 
-    Node* left = new Node();
+    NodePtr left = std::make_shared<Node>();
     node -> left = left;
     left -> parent = node;
     left -> code = node -> code + "0";
 
-    Node* right = new Node();
+    NodePtr right = std::make_shared<Node>();
     node -> right = right;
     right -> parent = node;
     right -> code = node -> code + "1";

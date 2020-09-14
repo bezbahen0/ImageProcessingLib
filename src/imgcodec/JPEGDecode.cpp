@@ -11,6 +11,7 @@
 
 #include <exception>
 #include <bitset>
+#include <iostream>
 
 namespace imp
 {
@@ -49,30 +50,18 @@ bool JPEGDecoder::open(std::string filename)
         return false;
     }
     filename_ = filename;
+    
+    ResultCode status = decodeImageFile();
 
-    uint8_t byte;
-    while(imgfile_ >> std::noskipws >> byte)
+    if(status == ResultCode::DECODE_DONE)
     {
-        if(byte == JPEG_BYTE_FF)
-        {
-            imgfile_ >> std::noskipws >> byte;
-            
-            ResultCode code = parseSegmentInfo(byte);
-
-            if(code != ResultCode::SUCCESS)
-            {
-                imgfile_.close();
-                return false;
-            }
-        }
-        else
-        {   
-            imgfile_.close();
-            return false;
-        }
+        decodeData();
     }
-
-    decodeData();
+    else
+    {
+        imgfile_.close();
+        return false;
+    }
     
     imgfile_.close();
     return true;
@@ -81,6 +70,46 @@ bool JPEGDecoder::open(std::string filename)
 unsigned char* JPEGDecoder::getRawData()
 {
     return nullptr;
+}
+
+JPEGDecoder::ResultCode JPEGDecoder::decodeImageFile()
+{
+    if (!imgfile_.is_open() || !imgfile_.good())
+        return ResultCode::ERROR;
+    
+    
+    uint8_t byte;
+    ResultCode status = ResultCode::DECODE_DONE;
+    
+    while (imgfile_ >> std::noskipws >> byte)
+    {
+        if (byte == JPEG_BYTE_FF)
+        {
+            imgfile_ >> std::noskipws >> byte;
+            
+            ResultCode code = parseSegmentInfo(byte);
+            
+            if (code == ResultCode::SUCCESS)
+                continue;
+            else if (code == ResultCode::TERMINATE)
+            {
+                status = ResultCode::TERMINATE;
+                break;
+            }
+            else if (code == ResultCode::DECODE_INCOMPLETE)
+            {
+                status = ResultCode::DECODE_INCOMPLETE;
+                break;
+            }
+        }
+        else
+        {
+            status = ResultCode::ERROR;
+            break;
+        }
+    }
+    
+    return status;
 }
 
 JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(uint16_t byte)
@@ -265,6 +294,8 @@ void JPEGDecoder::parseDQT()
 
     lenByte -= 2;
 
+    imgfile_ >> std::noskipws >> lenValTable;
+
     int precision = lenValTable >> 4;
     int qtable = lenValTable & 0x0F;
 
@@ -278,33 +309,37 @@ void JPEGDecoder::parseDQT()
 
 JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
 {
+    if(!imgfile_.is_open() || !imgfile_.good())
+        return ResultCode::ERROR; 
+
     //not full 
     uint16_t length, height, width;
     uint8_t precision, channels;
 
     imgfile_.read(reinterpret_cast<char*>(&length), 2);
-    imgfile_.read(reinterpret_cast<char*>(&precision), 1);
-    
     length = htons(length);
+
+    imgfile_ >> std::noskipws >> precision;
 
     imgfile_.read(reinterpret_cast<char*>(&height), 2);
     imgfile_.read(reinterpret_cast<char*>(&width), 2);
-    imgfile_.read(reinterpret_cast<char*>(&channels), 1);
-
     height = htons(height);
     width = htons(width);
+
+    imgfile_ >> std::noskipws >> channels;
 
     imageMetadata_.height = (int)height;
     imageMetadata_.width = (int)width;
     imageMetadata_.channels = (int)channels;
 
+    bool sampled = true;
     uint8_t id, samplingFactor, idQtable;
     for(int i = 0; i < (int)channels; ++i)
     {
         imgfile_ >> std::noskipws >> id >> samplingFactor >> idQtable; 
 
         if((samplingFactor >> 4 ) != 1 || (samplingFactor & 0x0F) != 1)
-            return ResultCode::TERMINATE;
+            sampled = false;
     }
 
     return ResultCode::SUCCESS;
@@ -312,7 +347,7 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
 
 void JPEGDecoder::parseDHT()
 {
-    if(imgfile_.is_open() || imgfile_.good())
+    if(!imgfile_.is_open() || !imgfile_.good())
         return;
 
     uint16_t lenSeg;
@@ -320,16 +355,16 @@ void JPEGDecoder::parseDHT()
     lenSeg = htons(lenSeg);
     
     int segmentEnd = (int)imgfile_.tellg() + (int)lenSeg - 2;
-    while(imgfile_.tellg() > segmentEnd)
+    while(imgfile_.tellg() < segmentEnd)
     {
         uint8_t tableInfo;
         imgfile_ >> std::noskipws >> tableInfo;
         
-        int tableType = (int)((tableInfo & 0x10) >> 4);
-        int tableid = (int)(tableInfo & 0x0F);
+        int tableType = int((tableInfo & 0x10) >> 4);
+        int tableid = int(tableInfo & 0x0F);
 
         uint8_t countSymbols;
-        int allSymbolCount;
+        int allSymbolCount = 0;
 
         for(int i = 0; i < 16; ++i)
         {
@@ -368,7 +403,7 @@ void JPEGDecoder::parseSOS()
     lenSeg = htons(lenSeg);
 
     uint8_t byte;
-    imgfile_.read(reinterpret_cast<char*>(byte), 1);
+    imgfile_ >> std::noskipws >> byte;
     int channels = (int)byte;
 
     if(channels < 1 || channels > 4)
@@ -378,8 +413,8 @@ void JPEGDecoder::parseSOS()
 
     for(int i = 0; i <  channels; ++i)
     {
-        uint8_t idchannel, idtable;
-        imgfile_ >> std::noskipws >> idchannel >> idtable;
+        uint16_t compInfo;
+        imgfile_.read(reinterpret_cast<char*>(&compInfo), 2);
     }
 
     /// skip [00], [3F], [00]
@@ -393,7 +428,7 @@ void JPEGDecoder::parseSOS()
 
 void JPEGDecoder::parseImgData()
 {
-    if(imgfile_.is_open() || imgfile_.good())
+    if(!imgfile_.is_open() || !imgfile_.good())
         return;
     
     uint8_t byte;
@@ -415,10 +450,9 @@ void JPEGDecoder::parseImgData()
         imageData_.append(bits.to_string());
     }
 }
-
 void JPEGDecoder::decodeData()
 {
-
+    std::cout << "its work" << std::endl;
 }
 
 }

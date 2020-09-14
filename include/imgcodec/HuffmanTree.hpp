@@ -2,6 +2,7 @@
 #define HUFFMANTREE_HPP
 
 #include <string>
+#include <memory>
 
 #include "include/types.hpp"
 
@@ -36,10 +37,12 @@ struct Node
     std::string code;
     uint16_t value; 
 
-    Node* right;
-    Node* left;
-    Node* parent;
+    std::shared_ptr<Node> right;
+    std::shared_ptr<Node> left;
+    std::shared_ptr<Node> parent;
 };
+
+using NodePtr = std::shared_ptr<Node>;
 
 class HuffmanTree
 {
@@ -48,17 +51,17 @@ public:
     HuffmanTree(const HuffmanTableType& table);
     ~HuffmanTree();
     
-    Node* getRoot();
-    void insert(Node* node, const uint16_t value);
+    NodePtr getRoot();
+    void insert(NodePtr node, const uint16_t value);
 
     bool empty();
     void clear();
 
 private:
-    Node* getRightLevelNode(Node* node);
-    void createChilds(Node* node);
+    NodePtr getRightLevelNode(NodePtr node);
+    void createChilds(NodePtr node);
 
-    Node* root_;
+    NodePtr root_;
 };
 
 }
