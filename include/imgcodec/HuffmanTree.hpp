@@ -8,6 +8,11 @@
 
 namespace imp
 {
+
+struct Node;
+using NodePtr = std::shared_ptr<Node>;
+
+
 struct Node
 {
 
@@ -37,12 +42,11 @@ struct Node
     std::string code;
     uint16_t value; 
 
-    std::shared_ptr<Node> right;
-    std::shared_ptr<Node> left;
-    std::shared_ptr<Node> parent;
+    NodePtr right;
+    NodePtr left;
+    NodePtr parent;
 };
 
-using NodePtr = std::shared_ptr<Node>;
 
 class HuffmanTree
 {
@@ -57,7 +61,7 @@ public:
     bool empty();
     void clear();
 
-private:
+protected:
     NodePtr getRightLevelNode(NodePtr node);
     void createChilds(NodePtr node);
 

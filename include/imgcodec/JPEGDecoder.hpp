@@ -35,7 +35,7 @@ public:
     virtual bool open(std::string filename) override;
     virtual unsigned char* getRawData() override;
 
-private:
+protected:
     ResultCode decodeImageFile();
     ResultCode parseSegmentInfo(uint16_t byte);
 
