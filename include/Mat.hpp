@@ -24,6 +24,8 @@ public:
     Mat();
     Mat(int rows, int cols, int depth, int channels);
     Mat(Size size, int depth, int channels);
+    Mat(int rows, int cols, int depth, int channels, void* data);
+    Mat(Size size, int depth, int channels, void* data);
     ~Mat();
 
     int rows() const;
@@ -31,15 +33,16 @@ public:
     Size size() const;
     int depth() const;
     int channels() const;
+    bool empty() const;
 
     unsigned char* data() const;
-
+//need thist change
     template<typename T>
     T& at(int rows, int cols)
     {
         return reinterpret_cast<T&>(data_[rows + cols]);
     }
-
+//this too
     template<typename T>
     T& at(int rows, int cols, int channels)
     {

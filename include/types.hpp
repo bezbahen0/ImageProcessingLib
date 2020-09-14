@@ -14,6 +14,13 @@ namespace imp
     using F32 = float;
     using F64 = double;*/
 
+    struct ImgMeta
+    {
+        int height;
+        int width;
+        int channels;
+    };
+
     enum 
     {
         GRAY = 1,

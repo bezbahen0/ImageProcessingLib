@@ -72,6 +72,11 @@ unsigned char* JPEGDecoder::getRawData()
     return nullptr;
 }
 
+Mat JPEGDecoder::getMatrix()
+{
+    return Mat();
+}
+
 JPEGDecoder::ResultCode JPEGDecoder::decodeImageFile()
 {
     if (!imgfile_.is_open() || !imgfile_.good())

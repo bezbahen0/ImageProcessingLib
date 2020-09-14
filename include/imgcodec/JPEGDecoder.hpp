@@ -7,15 +7,8 @@
 #include "HuffmanTree.hpp"
 #include "include/types.hpp"
 
-
 namespace imp
 {
-struct ImgMeta
-{
-    int height;
-    int width;
-    int channels;
-};
 
 class JPEGDecoder : public IDecoder
 {
@@ -30,10 +23,16 @@ public:
     };
 
     JPEGDecoder();
-    ~JPEGDecoder();
+    virtual ~JPEGDecoder();
 
     virtual bool open(std::string filename) override;
     virtual unsigned char* getRawData() override;
+    virtual Mat getMatrix() override;
+
+    static std::shared_ptr<JPEGDecoder> create()
+    {
+        return std::make_shared<JPEGDecoder>();
+    }
 
 protected:
     ResultCode decodeImageFile();

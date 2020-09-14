@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16.0)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
-set(PROJECT_UNIT_TESTS_NAME ${PROJECT_NAME_STR}_unit_tests)
+set(PROJECT_UNIT_TESTS_NAME tests)
 
 find_package(Boost COMPONENTS filesystem system unit_test_framework REQUIRED)
 
@@ -22,7 +22,7 @@ if(Boost_FOUND)
     target_link_libraries(${PROJECT_UNIT_TESTS_NAME} ${Boost_LIBRARIES})
 
     enable_testing()
-    add_test(DemoTest ${PROJECT_UNIT_TESTS_NAME})
+    add_test(Test test)
 else()
     message("boost not found, pleas install boost libreris for compilation unit_test")
 endif()
