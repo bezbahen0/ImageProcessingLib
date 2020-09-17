@@ -38,27 +38,27 @@ protected:
     ResultCode decodeImageFile();
     ResultCode parseSegmentInfo(Uint8 byte);
 
-    void parseAPP0();
+    ResultCode parseAPP0();
 
     /// comment segment parse
-    void parseCOM();
+    ResultCode parseCOM();
 
     /// Quantialize table
-    void parseDQT();
+    ResultCode parseDQT();
 
     /// Baseline DCT
     ResultCode parseSOF0();
 
     /// Huffman table parse
-    void parseDHT();
+    ResultCode parseDHT();
 
     /// Start of Scan
     /// contains channels on image
-    void parseSOS(); 
+    ResultCode parseSOS(); 
 
-    void parseImgData();
+    ResultCode parseImgData();
     /// decode encodeing data 
-    void decodeData();
+    ResultCode decodeData();
 
     ImgMeta imageMetadata_;
     std::string imageData_;

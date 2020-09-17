@@ -9,9 +9,7 @@
 #include <winsock.h>
 #endif
 
-#include <exception>
 #include <bitset>
-#include <iostream>
 
 namespace imp
 {
@@ -46,24 +44,20 @@ bool JPEGDecoder::open(std::string filename)
     imgfile_.open(filename, std::ios::in | std::ios::binary);
 
     if(!imgfile_.is_open() && !imgfile_.good())
-    {
         return false;
-    }
+
     filename_ = filename;
     
     ResultCode status = decodeImageFile();
 
     if(status == ResultCode::DECODE_DONE)
-    {
         decodeData();
-    }
     else
-    {
         imgfile_.close();
         return false;
-    }
     
     imgfile_.close();
+
     return true;
 }
 
@@ -82,11 +76,9 @@ JPEGDecoder::ResultCode JPEGDecoder::decodeImageFile()
     if (!imgfile_.is_open() || !imgfile_.good())
         return ResultCode::ERROR;
     
-    
     Uint8 byte;
-    ResultCode status = ResultCode::DECODE_DONE;
     
-    while (imgfile_ >> std::noskipws >> byte)
+    while(imgfile_ >> std::noskipws >> byte)
     {
         if (byte == JPEG_BYTE_FF)
         {
@@ -94,27 +86,22 @@ JPEGDecoder::ResultCode JPEGDecoder::decodeImageFile()
             
             ResultCode code = parseSegmentInfo(byte);
             
-            if (code == ResultCode::SUCCESS)
-                continue;
-            else if (code == ResultCode::TERMINATE)
+            if(code == ResultCode::TERMINATE)
             {
-                status = ResultCode::TERMINATE;
-                break;
+                return ResultCode::TERMINATE;
             }
-            else if (code == ResultCode::DECODE_INCOMPLETE)
+            else if(code == ResultCode::DECODE_INCOMPLETE)
             {
-                status = ResultCode::DECODE_INCOMPLETE;
-                break;
+                return ResultCode::DECODE_INCOMPLETE;
             }
         }
         else
         {
-            status = ResultCode::ERROR;
-            break;
+            return ResultCode::ERROR;
         }
     }
     
-    return status;
+    return ResultCode::DECODE_DONE;
 }
 
 JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(Uint8 byte)
@@ -216,55 +203,57 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(Uint8 byte)
     return ResultCode::SUCCESS;
 }
 
-void JPEGDecoder::parseAPP0()
+JPEGDecoder::ResultCode JPEGDecoder::parseAPP0()
 {
-        if (!imgfile_.is_open() || !imgfile_.good())
-            return;
-        
-        Uint16 lenByte = 0;
-        Uint8 byte = 0;
-        
-        imgfile_.read(reinterpret_cast<char *>(&lenByte), 2);
-        lenByte = htons(lenByte);
-        std::size_t curPos = imgfile_.tellg();
-        
-        imgfile_.seekg(5, std::ios_base::cur);
-        
-        Uint8 majVersionByte, minVersionByte;
-        imgfile_ >> std::noskipws >> majVersionByte >> minVersionByte;
-        
-        std::string majorVersion = std::to_string(majVersionByte);
-        std::string minorVersion = std::to_string((int)(minVersionByte >> 4));
-        minorVersion +=  std::to_string((int)(minVersionByte & 0x0F));
-        
-        Uint8 densityByte;
-        imgfile_ >> std::noskipws >> densityByte;
-        
-        std::string densityUnit = "";
-        switch(densityByte)
-        {
-            case 0x00: densityUnit = "Pixel Aspect Ratio"; break;
-            case 0x01: densityUnit = "Pixels per inch (DPI)"; break;
-            case 0x02: densityUnit = "Pixels per centimeter"; break;
-        }
-        
-        Uint16 xDensity = 0, yDensity = 0;
-        
-        imgfile_.read(reinterpret_cast<char *>(&xDensity), 2);
-        imgfile_.read(reinterpret_cast<char *>(&yDensity), 2);
-        
-        xDensity = htons(xDensity);
-        yDensity = htons(yDensity);
-        
-        Uint8 xThumb = 0, yThumb = 0;
-        imgfile_ >> std::noskipws >> xThumb >> yThumb;        
-        imgfile_.seekg(3 * xThumb * yThumb, std::ios_base::cur);
+    if (!imgfile_.is_open() || !imgfile_.good())
+        return ResultCode::ERROR;
+    
+    Uint16 lenByte = 0;
+    Uint8 byte = 0;
+    
+    imgfile_.read(reinterpret_cast<char *>(&lenByte), 2);
+    lenByte = htons(lenByte);
+    std::size_t curPos = imgfile_.tellg();
+    
+    imgfile_.seekg(5, std::ios_base::cur);
+    
+    Uint8 majVersionByte, minVersionByte;
+    imgfile_ >> std::noskipws >> majVersionByte >> minVersionByte;
+    
+    std::string majorVersion = std::to_string(majVersionByte);
+    std::string minorVersion = std::to_string((int)(minVersionByte >> 4));
+    minorVersion +=  std::to_string((int)(minVersionByte & 0x0F));
+    
+    Uint8 densityByte;
+    imgfile_ >> std::noskipws >> densityByte;
+    
+    std::string densityUnit = "";
+    switch(densityByte)
+    {
+        case 0x00: densityUnit = "Pixel Aspect Ratio"; break;
+        case 0x01: densityUnit = "Pixels per inch (DPI)"; break;
+        case 0x02: densityUnit = "Pixels per centimeter"; break;
+    }
+    
+    Uint16 xDensity = 0, yDensity = 0;
+    
+    imgfile_.read(reinterpret_cast<char *>(&xDensity), 2);
+    imgfile_.read(reinterpret_cast<char *>(&yDensity), 2);
+    
+    xDensity = htons(xDensity);
+    yDensity = htons(yDensity);
+    
+    Uint8 xThumb = 0, yThumb = 0;
+    imgfile_ >> std::noskipws >> xThumb >> yThumb;        
+    imgfile_.seekg(3 * xThumb * yThumb, std::ios_base::cur);
+
+    return ResultCode::SUCCESS; 
 }
 
-void JPEGDecoder::parseCOM()
+JPEGDecoder::ResultCode JPEGDecoder::parseCOM()
 {
     if(!imgfile_.is_open() || !imgfile_.good())
-        return;
+        return ResultCode::ERROR;
 
     Uint16 len;
     imgfile_.read(reinterpret_cast<char*>(&len), 2);
@@ -279,16 +268,18 @@ void JPEGDecoder::parseCOM()
         imgfile_ >> std::noskipws >> byte;
         if(byte == JPEG_BYTE_FF)
         {
-            throw std::runtime_error("jpeg decoder find forbidden simbol in com segment in image");
+            return ResultCode::ERROR;
         }
         comment.push_back(static_cast<char>(byte));
     }
+
+    return ResultCode::SUCCESS;
 }
 // need zigzag 
-void JPEGDecoder::parseDQT()
+JPEGDecoder::ResultCode JPEGDecoder::parseDQT()
 {
     if(!imgfile_.is_open() || !imgfile_.good())
-        return;
+        return ResultCode::ERROR;
 
     Uint16 lenByte = 0;
     Uint8 lenValTable;
@@ -310,6 +301,8 @@ void JPEGDecoder::parseDQT()
         imgfile_ >> std::noskipws >> tableid;
         qtable_[qtable].push_back((Uint16)tableid);
     }
+    
+    return ResultCode::SUCCESS;
 }
 
 JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
@@ -317,7 +310,6 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
     if(!imgfile_.is_open() || !imgfile_.good())
         return ResultCode::ERROR; 
 
-    //not full 
     Uint16 length, height, width;
     Uint8 precision, channels;
 
@@ -350,10 +342,10 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
     return ResultCode::SUCCESS;
 }
 
-void JPEGDecoder::parseDHT()
+JPEGDecoder::ResultCode JPEGDecoder::parseDHT()
 {
     if(!imgfile_.is_open() || !imgfile_.good())
-        return;
+        return ResultCode::ERROR;
 
     Uint16 lenSeg;
     imgfile_.read(reinterpret_cast<char*>(&lenSeg), 2);
@@ -396,12 +388,14 @@ void JPEGDecoder::parseDHT()
         }
         huffmanTree_[tableType][tableid] = HuffmanTree(huffmanTable_[tableType][tableid]);
     }
+
+    return ResultCode::SUCCESS;
 }
 
-void JPEGDecoder::parseSOS()
+JPEGDecoder::ResultCode JPEGDecoder::parseSOS()
 {
     if(!imgfile_.is_open() || !imgfile_.good())
-        return;
+        return ResultCode::ERROR;
 
     Uint16 lenSeg;
     imgfile_.read(reinterpret_cast<char*>(&lenSeg), 2);
@@ -412,7 +406,7 @@ void JPEGDecoder::parseSOS()
     int channels = (int)byte;
 
     if(channels < 1 || channels > 4)
-        throw std::runtime_error("channels on jpeg image invalid");
+        return ResultCode::DECODE_INCOMPLETE;
 
     imageMetadata_.channels = channels;
 
@@ -428,13 +422,13 @@ void JPEGDecoder::parseSOS()
         imgfile_ >> std::noskipws >> byte;
     }
    
-    parseImgData();
+    return parseImgData();
 }
 
-void JPEGDecoder::parseImgData()
+JPEGDecoder::ResultCode JPEGDecoder::parseImgData()
 {
     if(!imgfile_.is_open() || !imgfile_.good())
-        return;
+        return ResultCode::ERROR;
     
     Uint8 byte;
     while(imgfile_ >> std::noskipws >> byte)
@@ -446,7 +440,7 @@ void JPEGDecoder::parseImgData()
 
             if(byte == JPEG_EOI)
             {
-                return;
+                return ResultCode::SUCCESS;
             }
             std::bitset<8> bits1(prevByte);
             imageData_.append(bits1.to_string());
@@ -454,11 +448,13 @@ void JPEGDecoder::parseImgData()
         std::bitset<8> bits(byte);
         imageData_.append(bits.to_string());
     }
+
+    return ResultCode::DECODE_INCOMPLETE;
 }
-void JPEGDecoder::decodeData()
+JPEGDecoder::ResultCode JPEGDecoder::decodeData()
 {
     if(imageData_.empty())
-        throw std::runtime_error("image data not found, abort");
+        return ResultCode::DECODE_INCOMPLETE;
 
     for(int i = 0; i < imageData_.size() - 8; i += 8)
     {
@@ -485,6 +481,7 @@ void JPEGDecoder::decodeData()
         }
     }
 
+    return ResultCode::SUCCESS;
 
 }
 
