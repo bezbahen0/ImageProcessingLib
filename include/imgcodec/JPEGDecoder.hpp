@@ -36,7 +36,7 @@ public:
 
 protected:
     ResultCode decodeImageFile();
-    ResultCode parseSegmentInfo(uint16_t byte);
+    ResultCode parseSegmentInfo(Uint8 byte);
 
     void parseAPP0();
 

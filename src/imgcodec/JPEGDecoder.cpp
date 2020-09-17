@@ -83,7 +83,7 @@ JPEGDecoder::ResultCode JPEGDecoder::decodeImageFile()
         return ResultCode::ERROR;
     
     
-    uint8_t byte;
+    Uint8 byte;
     ResultCode status = ResultCode::DECODE_DONE;
     
     while (imgfile_ >> std::noskipws >> byte)
@@ -117,7 +117,7 @@ JPEGDecoder::ResultCode JPEGDecoder::decodeImageFile()
     return status;
 }
 
-JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(uint16_t byte)
+JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(Uint8 byte)
 {
     if(JPEG_BYTE_FF == byte || byte == JPEG_BYTE_0)
     {
@@ -221,8 +221,8 @@ void JPEGDecoder::parseAPP0()
         if (!imgfile_.is_open() || !imgfile_.good())
             return;
         
-        uint16_t lenByte = 0;
-        uint8_t byte = 0;
+        Uint16 lenByte = 0;
+        Uint8 byte = 0;
         
         imgfile_.read(reinterpret_cast<char *>(&lenByte), 2);
         lenByte = htons(lenByte);
@@ -230,14 +230,14 @@ void JPEGDecoder::parseAPP0()
         
         imgfile_.seekg(5, std::ios_base::cur);
         
-        uint8_t majVersionByte, minVersionByte;
+        Uint8 majVersionByte, minVersionByte;
         imgfile_ >> std::noskipws >> majVersionByte >> minVersionByte;
         
         std::string majorVersion = std::to_string(majVersionByte);
         std::string minorVersion = std::to_string((int)(minVersionByte >> 4));
         minorVersion +=  std::to_string((int)(minVersionByte & 0x0F));
         
-        uint8_t densityByte;
+        Uint8 densityByte;
         imgfile_ >> std::noskipws >> densityByte;
         
         std::string densityUnit = "";
@@ -248,7 +248,7 @@ void JPEGDecoder::parseAPP0()
             case 0x02: densityUnit = "Pixels per centimeter"; break;
         }
         
-        uint16_t xDensity = 0, yDensity = 0;
+        Uint16 xDensity = 0, yDensity = 0;
         
         imgfile_.read(reinterpret_cast<char *>(&xDensity), 2);
         imgfile_.read(reinterpret_cast<char *>(&yDensity), 2);
@@ -256,7 +256,7 @@ void JPEGDecoder::parseAPP0()
         xDensity = htons(xDensity);
         yDensity = htons(yDensity);
         
-        uint8_t xThumb = 0, yThumb = 0;
+        Uint8 xThumb = 0, yThumb = 0;
         imgfile_ >> std::noskipws >> xThumb >> yThumb;        
         imgfile_.seekg(3 * xThumb * yThumb, std::ios_base::cur);
 }
@@ -266,11 +266,11 @@ void JPEGDecoder::parseCOM()
     if(!imgfile_.is_open() || !imgfile_.good())
         return;
 
-    uint16_t len;
+    Uint16 len;
     imgfile_.read(reinterpret_cast<char*>(&len), 2);
     len = htons(len);
 
-    uint8_t byte;
+    Uint8 byte;
     std::string comment;
     int size = (int)len - 2;
     int endPos = (int)imgfile_.tellg() + (int)len - 2;
@@ -290,9 +290,9 @@ void JPEGDecoder::parseDQT()
     if(!imgfile_.is_open() || !imgfile_.good())
         return;
 
-    uint16_t lenByte = 0;
-    uint8_t lenValTable;
-    uint8_t tableid;
+    Uint16 lenByte = 0;
+    Uint8 lenValTable;
+    Uint8 tableid;
 
     imgfile_.read(reinterpret_cast<char*>(&lenByte), 2);
     lenByte = htons(lenByte);
@@ -308,7 +308,7 @@ void JPEGDecoder::parseDQT()
     for(int i = 0; i < 64; ++i)
     {
         imgfile_ >> std::noskipws >> tableid;
-        qtable_[qtable].push_back((uint16_t)tableid);
+        qtable_[qtable].push_back((Uint16)tableid);
     }
 }
 
@@ -318,8 +318,8 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
         return ResultCode::ERROR; 
 
     //not full 
-    uint16_t length, height, width;
-    uint8_t precision, channels;
+    Uint16 length, height, width;
+    Uint8 precision, channels;
 
     imgfile_.read(reinterpret_cast<char*>(&length), 2);
     length = htons(length);
@@ -338,7 +338,7 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
     imageMetadata_.channels = (int)channels;
 
     bool sampled = true;
-    uint8_t id, samplingFactor, idQtable;
+    Uint8 id, samplingFactor, idQtable;
     for(int i = 0; i < (int)channels; ++i)
     {
         imgfile_ >> std::noskipws >> id >> samplingFactor >> idQtable; 
@@ -355,20 +355,20 @@ void JPEGDecoder::parseDHT()
     if(!imgfile_.is_open() || !imgfile_.good())
         return;
 
-    uint16_t lenSeg;
+    Uint16 lenSeg;
     imgfile_.read(reinterpret_cast<char*>(&lenSeg), 2);
     lenSeg = htons(lenSeg);
     
     int segmentEnd = (int)imgfile_.tellg() + (int)lenSeg - 2;
     while(imgfile_.tellg() < segmentEnd)
     {
-        uint8_t tableInfo;
+        Uint8 tableInfo;
         imgfile_ >> std::noskipws >> tableInfo;
         
         int tableType = int((tableInfo & 0x10) >> 4);
         int tableid = int(tableInfo & 0x0F);
 
-        uint8_t countSymbols;
+        Uint8 countSymbols;
         int allSymbolCount = 0;
 
         for(int i = 0; i < 16; ++i)
@@ -381,7 +381,7 @@ void JPEGDecoder::parseDHT()
         int i = 0;
         for(int syms = 0; syms < allSymbolCount; ++syms)
         {
-            uint8_t code;
+            Uint8 code;
             imgfile_ >> std::noskipws >> code;
 
             if(huffmanTable_[tableType][tableid][i].first == 0)
@@ -403,11 +403,11 @@ void JPEGDecoder::parseSOS()
     if(!imgfile_.is_open() || !imgfile_.good())
         return;
 
-    uint16_t lenSeg;
+    Uint16 lenSeg;
     imgfile_.read(reinterpret_cast<char*>(&lenSeg), 2);
     lenSeg = htons(lenSeg);
 
-    uint8_t byte;
+    Uint8 byte;
     imgfile_ >> std::noskipws >> byte;
     int channels = (int)byte;
 
@@ -418,7 +418,7 @@ void JPEGDecoder::parseSOS()
 
     for(int i = 0; i <  channels; ++i)
     {
-        uint16_t compInfo;
+        Uint16 compInfo;
         imgfile_.read(reinterpret_cast<char*>(&compInfo), 2);
     }
 
@@ -436,12 +436,12 @@ void JPEGDecoder::parseImgData()
     if(!imgfile_.is_open() || !imgfile_.good())
         return;
     
-    uint8_t byte;
+    Uint8 byte;
     while(imgfile_ >> std::noskipws >> byte)
     {
         if(byte == JPEG_BYTE_FF)
         {
-            uint8_t prevByte = byte;
+            Uint8 prevByte = byte;
             imgfile_ >> std::noskipws >> byte;
 
             if(byte == JPEG_EOI)
@@ -457,7 +457,35 @@ void JPEGDecoder::parseImgData()
 }
 void JPEGDecoder::decodeData()
 {
-    std::cout << "its work" << std::endl;
+    if(imageData_.empty())
+        throw std::runtime_error("image data not found, abort");
+
+    for(int i = 0; i < imageData_.size() - 8; i += 8)
+    {
+        std::string temp = imageData_.substr(i, 8);
+        
+        if(temp == "11111111")
+        {
+            if(i + 8 < imageData_.size() - 8)
+            {
+                std::string nextTemp = imageData_.substr(i + 8, 8);
+                if(nextTemp == "00000000")
+                {
+                    imageData_.erase(i + 8, 8);
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            else 
+            {
+                continue;
+            }
+        }
+    }
+
+
 }
 
 }

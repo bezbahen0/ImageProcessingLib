@@ -6,6 +6,9 @@
 
 namespace imp
 {
+
+    using Uint8 = unsigned char;
+    using Uint16 = unsigned short;
     /*using U8 = unsigned char;
     using U16 = unsigned short;
     using S8 = signed char;
