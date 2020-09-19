@@ -13,13 +13,12 @@ namespace imp
 class JPEGDecoder : public IDecoder
 {
 public:
-    enum ResultCode
-    {
-        SUCCESS,
-        TERMINATE,
-        ERROR,
-        DECODE_INCOMPLETE,
-        DECODE_DONE
+    enum ResultCode {
+        SUCCESS,              // OK!
+        TERMINATE,            // algorithm not support
+        ERROR,                // error, not asasiate with process decode
+        DECODE_INCOMPLETE,    // decode bad complete (jpeg image not valid)
+        DECODE_DONE           // decode complete 
     };
 
     JPEGDecoder();
@@ -57,6 +56,8 @@ protected:
     ResultCode parseSOS(); 
 
     ResultCode parseImgData();
+
+    ResultCode byteScanData();
     /// decode encodeing data 
     ResultCode decodeData();
 
@@ -66,12 +67,12 @@ protected:
     std::string filename_;
     std::ifstream imgfile_;
 
-    std::vector<std::vector<uint16_t>> qtable_;
+    std::vector<std::vector<Uint16>> qtable_;
 
-    /// 4 huffman tables
-    /// [type][idtable][id array*id symbol count*]
-    /// in pair int - count symbols
-    ///         std::vector<uint8_t> - values codes
+    // 4 huffman tables
+    // [type][idtable][id array*id symbol count*]
+    // in pair int - count symbols
+    //         std::vector<uint8_t> - values codes
     HuffmanTableType huffmanTable_[2][2]; 
     HuffmanTree huffmanTree_[2][2];
 };

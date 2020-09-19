@@ -20,7 +20,7 @@ struct Node
     {
     }
     
-    Node(const uint16_t value, const std::string code) : 
+    Node(const Uint16 value, const std::string code) : 
         value(value), code(code), right(nullptr), left(nullptr), parent(nullptr)
     {
     }
@@ -40,7 +40,7 @@ struct Node
     }
 
     std::string code;
-    uint16_t value; 
+    Uint16 value; 
 
     NodePtr right;
     NodePtr left;
@@ -56,7 +56,7 @@ public:
     ~HuffmanTree();
     
     NodePtr getRoot();
-    void insert(NodePtr node, const uint16_t value);
+    std::string contains(std::string& huffmanCode);
 
     bool empty();
     void clear();

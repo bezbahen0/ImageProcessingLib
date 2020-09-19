@@ -56,9 +56,26 @@ NodePtr HuffmanTree::getRoot()
     return root_;
 }
 
-void insert(NodePtr node, const uint16_t value)
+std::string HuffmanTree::contains(std::string& huffmanCode)
 {
+    NodePtr it = root_;
+    for(int i = 0; i != huffmanCode.size(); ++i)
+    {
+        if(huffmanCode[i] == '0')
+            it = it -> left;
+        else if(huffmanCode[i] == '1')
+            it = it -> right;
+        else
+            return "";
 
+        if(it != nullptr && huffmanCode == it -> code)
+        {
+            if(it -> value == 0x0000)
+                return "EOB";
+            return std::to_string(it -> value);
+        }
+    }
+    return "";
 }
 
 bool HuffmanTree::empty()

@@ -7,15 +7,10 @@
 namespace imp
 {
 
+    using Int8 = char;
+    using Int16 = short;
     using Uint8 = unsigned char;
     using Uint16 = unsigned short;
-    /*using U8 = unsigned char;
-    using U16 = unsigned short;
-    using S8 = signed char;
-    using S16 = signed short;
-    using S32 = signed int;
-    using F32 = float;
-    using F64 = double;*/
 
     struct ImgMeta
     {
@@ -39,7 +34,8 @@ namespace imp
         BLUE
     };
 
-    using HuffmanTableType = std::array<std::pair<int, std::vector<uint8_t>>, 16>;
+    using HuffmanTableType = std::array<std::pair<int, std::vector<Uint8>>, 16>;
+
 
 }
 #endif /* TYPES_HPP */

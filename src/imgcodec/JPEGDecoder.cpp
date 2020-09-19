@@ -1,6 +1,3 @@
-#include "include/imgcodec/JPEGDecoder.hpp"
-#include "include/imgcodec/markers.hpp"
-
 #ifdef __linux__ 
 #include <arpa/inet.h>
 #endif
@@ -10,6 +7,10 @@
 #endif
 
 #include <bitset>
+
+#include "include/imgcodec/JPEGDecoder.hpp"
+#include "include/imgcodec/markers.hpp"
+#include "include/imgcodec/utils.hpp"
 
 namespace imp
 {
@@ -51,11 +52,15 @@ bool JPEGDecoder::open(std::string filename)
     ResultCode status = decodeImageFile();
 
     if(status == ResultCode::DECODE_DONE)
-        decodeData();
+    {
+        if(decodeData() != ResultCode::SUCCESS)
+            return false;
+    }
     else
+    {
         imgfile_.close();
         return false;
-    
+    }
     imgfile_.close();
 
     return true;
@@ -112,13 +117,11 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(Uint8 byte)
     }
     else if(byte == JPEG_APP0)
     {
-        parseAPP0();
-        return ResultCode::SUCCESS;
+        return parseAPP0();
     }
     else if(byte == JPEG_COM)
     {
-        parseCOM();
-        return ResultCode::SUCCESS;
+        return parseCOM();
     }
     else if(byte == JPEG_SOF0)
     {
@@ -126,18 +129,15 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSegmentInfo(Uint8 byte)
     }
     else if(byte == JPEG_DQT)
     {
-        parseDQT();
-        return ResultCode::SUCCESS;
+        return parseDQT();
     }
     else if(byte == JPEG_DHT)
     {
-        parseDHT();
-        return ResultCode::SUCCESS;
+        return parseDHT();
     }
     else if(byte == JPEG_SOS)
     {
-        parseSOS();
-        return ResultCode::SUCCESS;
+        return parseSOS();
     }
     else if(byte == JPEG_SOI)
     {
@@ -451,7 +451,8 @@ JPEGDecoder::ResultCode JPEGDecoder::parseImgData()
 
     return ResultCode::DECODE_INCOMPLETE;
 }
-JPEGDecoder::ResultCode JPEGDecoder::decodeData()
+
+JPEGDecoder::ResultCode JPEGDecoder::byteScanData()
 {
     if(imageData_.empty())
         return ResultCode::DECODE_INCOMPLETE;
@@ -466,23 +467,136 @@ JPEGDecoder::ResultCode JPEGDecoder::decodeData()
             {
                 std::string nextTemp = imageData_.substr(i + 8, 8);
                 if(nextTemp == "00000000")
-                {
                     imageData_.erase(i + 8, 8);
-                }
-                else
-                {
-                    continue;
-                }
-            }
-            else 
-            {
-                continue;
             }
         }
     }
 
     return ResultCode::SUCCESS;
+}
 
+JPEGDecoder::ResultCode JPEGDecoder::decodeData()
+{
+    ResultCode status = byteScanData();
+    if(status != ResultCode::SUCCESS)
+        return status;
+
+    const int HT_DC = 0;
+    const int HT_AC = 1;
+
+    int it = 0;
+    int chan = imageMetadata_.channels;
+    std::size_t MCUcount = (imageMetadata_.height * imageMetadata_.width) / 64;
+    for(std::size_t i = 0; i < MCUcount; ++i)
+    {
+        std::vector<std::vector<int>> RLE(chan);
+
+        for(int channelId; channelId < RLE.size(); ++channelId)
+        {
+            std::string bits = "";
+
+            int huffmanTableId = channelId == 0 ? 0 : 1;
+            while(true)
+            {
+                bits += imageData_[it];
+                std::string value = huffmanTree_[HT_DC][huffmanTableId].contains(bits);
+
+                if(!utils::isStringWhiteSpace(value))
+                {
+                    if(value != "EOB")
+                    {
+                        int count = Uint8(std::stoi(value)) >> 4;
+                        int category = Uint8(std::stoi(value)) &  0x0F;
+                        int DC = utils::bitStringtoValue(imageData_.substr(it + 1, category)); 
+
+                        it += category + 1;
+                        bits = "";
+
+                        RLE[channelId].push_back(count);
+                        RLE[channelId].push_back(DC);
+                        break;
+                    }
+                    else
+                    {
+                        RLE[channelId].push_back(0);
+                        RLE[channelId].push_back(0);
+
+                        bits = "";
+                        it++;
+                        break;
+                    }
+                }
+                else
+                {
+                    it++;
+                }
+            }
+
+            bits = "";
+            int ACcodesCount = 0;
+            while(true)
+            {
+                if(ACcodesCount == 63)
+                    break;
+
+                bits += imageData_[it];
+                std::string value = huffmanTree_[HT_AC][huffmanTableId].contains(bits);
+
+                if(!utils::isStringWhiteSpace(value))
+                {
+                    if(value != "EOB")
+                    {
+                        int count = Uint8(std::stoi(value)) >> 4;
+                        int category = Uint8(std::stoi(value)) &  0x0F;
+                        int AC = utils::bitStringtoValue(imageData_.substr(it + 1, category)); 
+
+                        it += category + 1;
+                        bits = "";
+
+                        RLE[channelId].push_back(count);
+                        RLE[channelId].push_back(AC);
+                        break;
+                    }
+                    else
+                    {
+                        RLE[channelId].push_back(0);
+                        RLE[channelId].push_back(0);
+
+                        bits = "";
+                        it++;
+                        break;
+                    }
+                }
+                else
+                {
+                    it++;
+                }
+            }
+
+            if(RLE[channelId].size() == 2)
+            {
+                bool allZeros = true;
+                for(auto i = RLE[channelId].begin(); i != RLE[channelId].end(); ++i)
+                {
+                    if(*i != 0)
+                    {
+                        allZeros = false;
+                        break;
+                    }
+                }
+                if(allZeros)
+                {
+                    RLE[channelId].pop_back();
+                    RLE[channelId].pop_back();
+                }
+            }
+        }
+        //push mcu
+
+    }
+
+
+    return ResultCode::SUCCESS;
 }
 
 }
