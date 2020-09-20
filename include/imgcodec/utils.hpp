@@ -4,47 +4,22 @@
 #include <string>
 #include <cctype>
 #include <cmath>
+#include <utility>
+
+#include "include/types.hpp"
 
 namespace imp
 {
 
 namespace utils
 {
-    const Int16 bitStringtoValue(const std::string& bitStr)
-    {
-        if (bitStr == "")
-            return 0x0000;
-        
-        Int16 value = 0x0000;
-        
-        char sign = bitStr[0];
-        int factor = sign == '0' ? -1 : 1;
-            
-        for (auto i = 0; i < bitStr.size(); ++i)
-        {
-            if (bitStr[i] == sign)
-                value += Int16(std::pow(2, bitStr.size() - 1 - i));
-        }
-        
-        return factor * value;
-    }
+    const Int16 bitStringtoValue(const std::string& bitStr);
  
-    bool isWhiteSpace(const char ch)
-    {
-        return iscntrl(ch) || isblank(ch) || isspace(ch);
-    }
+    bool isWhiteSpace(const char ch);
 
-    bool isStringWhiteSpace(const std::string& str)
-    {
-        for(auto i = str.begin(); i != str.end(); ++i)
-        {
-            if(!isWhiteSpace(*i))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
+    bool isStringWhiteSpace(const std::string& str);
+
+    const std::pair<const int, const int> zzOrderToMatIndices( const int zzindex );
 }
 
 }

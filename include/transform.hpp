@@ -5,7 +5,7 @@
 
 namespace imp
 {
-    void idct(CompareMtrices& block, std::vector<std::array<std::array<float, 8>, 8>> IDCTCoeffs); 
+    void idct(CompareMtrices& block, std::vector<std::array<std::array<float, 8>, 8>>& IDCTCoeffs); 
     void convertYCbCrToRGB(CompareMtrices& block);
     void performLevelShift(CompareMtrices& block, std::vector<std::array<std::array<float, 8>, 8>> IDCTCoeffs);
 }
