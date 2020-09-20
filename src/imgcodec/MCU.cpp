@@ -13,6 +13,7 @@ MCU::MCU(const std::vector<std::vector<int>>& RLE, const std::vector<std::vector
 {
     DCDiff_ = std::vector<int>(RLE.size());
     IDCTCoeffs_ = std::vector<std::array<std::array<float, 8>, 8>>(RLE.size());
+    block_ = CompareMtrices(RLE.size());
 
     createMCU(RLE, QTable);
 }
@@ -60,9 +61,9 @@ void MCU::createMCU(const std::vector<std::vector<int>>& RLE, const std::vector<
         
         for ( auto i = 0; i < 64; ++i )
         {
-/*            auto coords = utils::zzOrderToMatIndices( i );
+            auto coords = utils::zzOrderToMatIndices( i );
             
-            block_[compID][ coords.first ][ coords.second ] = zzOrder[i];*/
+            block_[compID][ coords.first ][ coords.second ] = zzOrder[i];
         }
     }
     

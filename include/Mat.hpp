@@ -40,7 +40,7 @@ public:
     template<typename T>
     T& at(int rows, int cols)
     {
-        return reinterpret_cast<T&>(data_[rows + cols]);
+        return reinterpret_cast<T&>(data_[rows_ * rows + cols]);
     }
 //this too
     template<typename T>

@@ -491,7 +491,7 @@ JPEGDecoder::ResultCode JPEGDecoder::decodeData()
     {
         std::vector<std::vector<int>> RLE(chan);
 
-        for(int channelId; channelId < RLE.size(); ++channelId)
+        for(int channelId = 0; channelId < RLE.size(); ++channelId)
         {
             std::string bits = "";
 
@@ -555,7 +555,8 @@ JPEGDecoder::ResultCode JPEGDecoder::decodeData()
 
                         RLE[channelId].push_back(count);
                         RLE[channelId].push_back(AC);
-                        break;
+
+                        ACcodesCount += count + 1;
                     }
                     else
                     {
