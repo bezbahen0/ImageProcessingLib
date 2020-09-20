@@ -35,7 +35,8 @@ namespace imp
     };
 
     using HuffmanTableType = std::array<std::pair<int, std::vector<Uint8>>, 16>;
-
+    using Matrix8x8 = std::array<std::array<int, 8>, 8>;
+    using CompareMtrices = std::vector<Matrix8x8>;
 
 }
 #endif /* TYPES_HPP */

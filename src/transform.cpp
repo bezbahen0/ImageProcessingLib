@@ -1,0 +1,54 @@
+#include "include/transform.hpp"
+
+#include <cmath>
+
+namespace imp
+{
+
+void idct(CompareMtrices& block, std::vector<std::array<std::array<float, 8>, 8>> IDCTCoeffs)
+{
+
+}
+
+void convertYCbCrToRGB(CompareMtrices& block)
+{
+    for(int x = 0; x < 8; ++x)
+    {
+        for(int y = 0; y < 8; ++y)
+        {
+            float Y = block[0][x][y];
+            float Cb = block[1][x][y];
+            float Cr = block[2][x][y];
+
+            int R = (int)std::floor( Y + 1.402 * ( 1.0 * Cr - 128.0 ) );
+            int G = (int)std::floor( Y - 0.344136 * ( 1.0 * Cb - 128.0 ) - 0.714136 * ( 1.0 * Cr - 128.0 ) );
+            int B = (int)std::floor( Y + 1.772 * ( 1.0 * Cb - 128.0 ) );
+            
+            R = std::max( 0, std::min( R, 255 ) );
+            G = std::max( 0, std::min( G, 255 ) );
+            B = std::max( 0, std::min( B, 255 ) );
+            
+            block[0][y][x] = R;
+            block[1][y][x] = G;
+            block[2][y][x] = B;
+        }
+    }
+
+}
+
+void performLevelShift(CompareMtrices& block, std::vector<std::array<std::array<float, 8>, 8>> IDCTCoeffs)
+{
+    for(auto i = 0; i < block.size(); ++i)
+    {
+        for(int x = 0; x < 8; ++x)
+        {
+            for(int y = 0; y < 8; ++y)
+            {
+                block[i][x][y] = std::roundl(IDCTCoeffs[i][x][y]) + 128;
+            }
+        }
+    }
+
+}
+
+}

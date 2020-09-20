@@ -5,6 +5,7 @@
 
 #include "IDecoder.hpp"
 #include "HuffmanTree.hpp"
+#include "MCU.hpp"
 #include "include/types.hpp"
 
 namespace imp
@@ -75,6 +76,7 @@ protected:
     //         std::vector<uint8_t> - values codes
     HuffmanTableType huffmanTable_[2][2]; 
     HuffmanTree huffmanTree_[2][2];
+    std::vector<MCU> mcu_;
 };
 
 }

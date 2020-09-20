@@ -591,10 +591,8 @@ JPEGDecoder::ResultCode JPEGDecoder::decodeData()
                 }
             }
         }
-        //push mcu
-
+        mcu_.push_back(MCU(RLE, qtable_));
     }
-
 
     return ResultCode::SUCCESS;
 }
