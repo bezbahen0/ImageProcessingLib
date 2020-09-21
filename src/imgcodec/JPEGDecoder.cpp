@@ -83,9 +83,9 @@ Mat JPEGDecoder::createImageWithMCU(std::vector<MCU>& MCU)
    
     int count = 0;
     Mat mat = Mat::zeros(height, width, 1, imageMetadata_.channels);
-    for(int y = 0; y <= width; y += 8)
+    for(int y = 0; y <= width - 8; y += 8)
     {
-        for(int x = 0; x <= height; x += 8)
+        for(int x = 0; x <= height - 8; x += 8)
         {
             auto block = MCU[count].getAllMatrix();
             for(int v = 0; v < 8; ++v)
