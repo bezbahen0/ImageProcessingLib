@@ -7,17 +7,17 @@ namespace imp
 
 void idct(CompareMtrices& block, std::vector<std::array<std::array<float, 8>, 8>>& IDCTCoeffs)
 {
-    for ( int i = 0; i < block.size(); ++i )
+    for(int i = 0; i < block.size(); ++i)
     {
-        for ( int y = 0; y < 8; ++y )
+        for(int y = 0; y < 8; ++y)
         {
-            for ( int x = 0; x < 8; ++x )
+            for(int x = 0; x < 8; ++x)
             {
                 float sum = 0.0;
                 
-                for ( int u = 0; u < 8; ++u )
+                for(int u = 0; u < 8; ++u)
                 {
-                    for ( int v = 0; v < 8; ++v )
+                    for( int v = 0; v < 8; ++v)
                     {
                         float Cu = u == 0 ? 1.0 / std::sqrt(2.0) : 1.0;
                         float Cv = v == 0 ? 1.0 / std::sqrt(2.0) : 1.0;
@@ -35,13 +35,13 @@ void idct(CompareMtrices& block, std::vector<std::array<std::array<float, 8>, 8>
 
 void convertYCbCrToRGB(CompareMtrices& block)
 {
-    for(int x = 0; x < 8; ++x)
+    for(int y = 0; y < 8; ++y)
     {
-        for(int y = 0; y < 8; ++y)
+        for(int x = 0; x < 8; ++x)
         {
-            float Y = block[0][x][y];
-            float Cb = block[1][x][y];
-            float Cr = block[2][x][y];
+            float Y = block[0][y][x];
+            float Cb = block[1][y][x];
+            float Cr = block[2][y][x];
 
             int R = (int)std::floor( Y + 1.402 * ( 1.0 * Cr - 128.0 ) );
             int G = (int)std::floor( Y - 0.344136 * ( 1.0 * Cb - 128.0 ) - 0.714136 * ( 1.0 * Cr - 128.0 ) );
@@ -63,11 +63,11 @@ void performLevelShift(CompareMtrices& block, std::vector<std::array<std::array<
 {
     for(auto i = 0; i < block.size(); ++i)
     {
-        for(int x = 0; x < 8; ++x)
+        for(int y = 0; y < 8; ++y)
         {
-            for(int y = 0; y < 8; ++y)
+            for(int x = 0; x < 8; ++x)
             {
-                block[i][x][y] = std::roundl(IDCTCoeffs[i][x][y]) + 128;
+                block[i][y][x] = std::roundl(IDCTCoeffs[i][y][x]) + 128;
             }
         }
     }

@@ -21,17 +21,10 @@ MCU::MCU(const std::vector<std::vector<int>>& RLE, const std::vector<std::vector
 MCU::~MCU()
 {
     QTable_.shrink_to_fit();
-    //allMCU_.shrink_to_fit();
 }
-
-/*void MCU::add(std::vector<std::vector<int>>& RLE)
-{
-    createMCU(RLE, QTable_);
-}*/
 
 CompareMtrices& MCU::getAllMatrix()
 {
-    //return allMCU_;
     return block_;
 }
 
@@ -61,16 +54,18 @@ void MCU::createMCU(const std::vector<std::vector<int>>& RLE, const std::vector<
         
         for ( auto i = 0; i < 64; ++i )
         {
-            auto coords = utils::zzOrderToMatIndices( i );
+            auto coords = utils::zzOrderToMatIndices(i);
             
-            block_[compID][ coords.first ][ coords.second ] = zzOrder[i];
+            block_[compID][coords.first][coords.second] = zzOrder[i];
         }
     }
     
     idct(block_, IDCTCoeffs_);
     performLevelShift(block_, IDCTCoeffs_);
-    convertYCbCrToRGB(block_);
-
+    if(RLE.size() == RGB)
+    {
+        convertYCbCrToRGB(block_);
+    }
 }
 
 }

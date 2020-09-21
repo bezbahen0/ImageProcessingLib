@@ -18,6 +18,7 @@ namespace imp
         file << "P6 " << std::endl;
         file << "#hi" << std::endl;
         file << image.size().width << " " << image.size().height << std::endl;
+        file << 255 << std::endl;
         for(int i = 0; i != image.rows(); ++i)
         {
             for(int j = 0; j != image.cols(); ++j)

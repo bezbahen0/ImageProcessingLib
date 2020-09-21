@@ -58,23 +58,25 @@ NodePtr HuffmanTree::getRoot()
 
 std::string HuffmanTree::contains(std::string& huffmanCode)
 {
-    NodePtr it = root_;
-    for(int i = 0; i != huffmanCode.size(); ++i)
+    int i = 0;
+    NodePtr nptr = root_;
+    do
     {
         if(huffmanCode[i] == '0')
-            it = it -> left;
-        else if(huffmanCode[i] == '1')
-            it = it -> right;
+            nptr = nptr->left;
         else
-            return "";
-
-        if(it != nullptr && huffmanCode == it -> code)
+            nptr = nptr->right;
+        
+        if(nptr != nullptr && nptr->isLeaf() && nptr->code == huffmanCode)
         {
-            if(it -> value == 0x0000)
+            if(nptr->value == 0x0000)
                 return "EOB";
-            return std::to_string(it -> value);
+            return std::to_string( nptr->value );
         }
-    }
+        i++;
+        
+    } while(nptr != nullptr && i < huffmanCode.size());
+    
     return "";
 }
 
