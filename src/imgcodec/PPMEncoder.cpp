@@ -22,7 +22,7 @@ namespace imp
         {
             for(int j = 0; j != image.cols(); ++j)
             {
-                file << image.at<uint8_t>(i, j, 0) << image.at<uint8_t>(i, j, 1) << image.at<uint8_t>(i, j, 2);
+                file << image.at<Uint8>(i, j, 0) << image.at<Uint8>(i, j, 1) << image.at<Uint8>(i, j, 2);
             }
         }
     

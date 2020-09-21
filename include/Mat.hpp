@@ -46,7 +46,7 @@ public:
     template<typename T>
     T& at(int rows, int cols, int channels)
     {
-        return reinterpret_cast<T&>(data_[channels + rows + cols]);
+        return reinterpret_cast<T&>(data_[channels * channels_ + rows_ * rows + cols]);
     }
 
     static Mat zeros(int rows, int cols, int depth, int channels);

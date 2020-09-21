@@ -77,7 +77,7 @@ unsigned char* Mat::data() const
 Mat Mat::zeros(int rows, int cols, int depth, int channels)
 {
     Mat mat(rows, cols, depth, channels);
-    memset(mat.data(), 0, rows * cols * channels * sizeof(mat.data()));
+    std::memset(mat.data(), 0, rows * cols * channels);
     return mat;
 }
 
