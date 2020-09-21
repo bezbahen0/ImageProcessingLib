@@ -68,12 +68,40 @@ bool JPEGDecoder::open(std::string filename)
 
 unsigned char* JPEGDecoder::getRawData()
 {
-    return nullptr;
+    return createImageWithMCU(mcu_).data();
 }
 
 Mat JPEGDecoder::getMatrix()
 {
-    return Mat();
+    return createImageWithMCU(mcu_);
+}
+
+Mat JPEGDecoder::createImageWithMCU(std::vector<MCU>& MCU)
+{
+    int width = imageMetadata_.width % 8 == 0 ? imageMetadata_.width : imageMetadata_.width + 8 - (imageMetadata_.width % 8); 
+    int height = imageMetadata_.height % 8 == 0 ? imageMetadata_.height : imageMetadata_.height + 8 - (imageMetadata_.height % 8); 
+   
+    int count = 0;
+    Mat mat = Mat::zeros(height, width, 1, imageMetadata_.channels);
+    for(int y = 0; y <= width; y += 8)
+    {
+        for(int x = 0; x <= height; x += 8)
+        {
+            auto block = MCU[count].getAllMatrix();
+            for(int v = 0; v < 8; ++v)
+            {
+                for(int u = 0; u < 8; ++u)
+                {
+                    for(int i = 0; i < imageMetadata_.channels; ++i)
+                    {
+                        mat.at<int>(y + v, x + u, i) = block[i][v][u];
+                    }
+                }
+            }
+            count++;
+        }
+    }
+    return mat;
 }
 
 JPEGDecoder::ResultCode JPEGDecoder::decodeImageFile()

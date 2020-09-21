@@ -1,9 +1,9 @@
-#include "include/Mat.hpp"
 #include "include/imgcodec/JPEGDecoder.hpp"
 #include "include/loadsave.hpp"
-#include <iostream>
 
 int main(int argc, char* argv[])
 {
+    imp::Mat mat = imp::imread(argv[1]);
+    imp::imwrite("image.ppm", mat);
     return 0;
 }

@@ -35,6 +35,8 @@ public:
     }
 
 protected:
+    Mat createImageWithMCU(std::vector<MCU>& MCU);
+
     ResultCode decodeImageFile();
     ResultCode parseSegmentInfo(Uint8 byte);
 

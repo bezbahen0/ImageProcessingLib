@@ -12,7 +12,7 @@ namespace imp
     std::string getExtension(std::string filename);
 
     Mat imread(std::string filename);
-    void imwrite(std::string filename, Mat image);
+    void imwrite(std::string filename, Mat& image);
     
     DecoderPtr getDecoder(std::string extension);
     EncoderPtr getEncoder(std::string extension);

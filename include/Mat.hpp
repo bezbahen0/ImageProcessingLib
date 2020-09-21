@@ -49,6 +49,8 @@ public:
         return reinterpret_cast<T&>(data_[channels + rows + cols]);
     }
 
+    static Mat zeros(int rows, int cols, int depth, int channels);
+
 private:
     int cols_;
     int rows_;
