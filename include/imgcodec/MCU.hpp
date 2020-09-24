@@ -23,7 +23,7 @@ protected:
     CompareMtrices block_;
     std::vector<std::vector<Uint16>> QTable_;
     //std::vector<MCU> allMCU_;
-    std::vector<int> DCDiff_;
+    static std::vector<int> DCDiff_;
     std::vector<std::array<std::array<float, 8>, 8>> IDCTCoeffs_;
 };
 

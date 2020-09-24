@@ -2,6 +2,7 @@
 #define JPEGDECODER_HPP
 
 #include <fstream>
+#include <vector>
 
 #include "IDecoder.hpp"
 #include "HuffmanTree.hpp"
@@ -64,6 +65,7 @@ protected:
     /// decode encodeing data 
     ResultCode decodeData();
 
+private:
     ImgMeta imageMetadata_;
     std::string imageData_;
 

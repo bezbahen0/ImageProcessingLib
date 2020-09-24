@@ -4,6 +4,6 @@
 int main(int argc, char* argv[])
 {
     imp::Mat mat = imp::imread(argv[1]);
-    imp::imwrite("image.pgm", mat);
+    imp::imwrite(argv[2], mat);
     return 0;
 }

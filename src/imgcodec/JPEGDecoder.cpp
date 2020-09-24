@@ -82,7 +82,6 @@ Mat JPEGDecoder::createImageWithMCU(std::vector<MCU>& MCU)
     int height = imageMetadata_.height % 8 == 0 ? imageMetadata_.height : imageMetadata_.height + 8 - (imageMetadata_.height % 8); 
    
     int count = 0;
-   // Mat mat = Mat::zeros(height, width, 1, imageMetadata_.channels);
     Mat mat(height,width, 1, imageMetadata_.channels);
     for(int y = 0; y <= width - 8; y += 8)
     {
@@ -319,18 +318,20 @@ JPEGDecoder::ResultCode JPEGDecoder::parseDQT()
 
     lenByte -= 2;
 
-    imgfile_ >> std::noskipws >> lenValTable;
+    for(int qt = 0; qt < int(lenByte) / 65; ++qt)
+    { 
+        imgfile_ >> std::noskipws >> lenValTable;
 
-    int precision = lenValTable >> 4;
-    int qtable = lenValTable & 0x0F;
+        int precision = lenValTable >> 4;
+        int qtable = lenValTable & 0x0F;
 
-    qtable_.push_back({});
-    for(int i = 0; i < 64; ++i)
-    {
-        imgfile_ >> std::noskipws >> tableid;
-        qtable_[qtable].push_back((Uint16)tableid);
+        qtable_.push_back({});
+        for(int i = 0; i < 64; ++i)
+        {
+            imgfile_ >> std::noskipws >> tableid;
+            qtable_[qtable].push_back((Uint16)tableid);
+        }
     }
-    
     return ResultCode::SUCCESS;
 }
 
@@ -358,14 +359,13 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSOF0()
     imageMetadata_.width = (int)width;
     imageMetadata_.channels = (int)channels;
 
-    bool sampled = true;
     Uint8 id, samplingFactor, idQtable;
     for(int i = 0; i < (int)channels; ++i)
     {
         imgfile_ >> std::noskipws >> id >> samplingFactor >> idQtable; 
 
         if((samplingFactor >> 4 ) != 1 || (samplingFactor & 0x0F) != 1)
-            sampled = false;
+            return ResultCode::TERMINATE;
     }
 
     return ResultCode::SUCCESS;
@@ -380,7 +380,7 @@ JPEGDecoder::ResultCode JPEGDecoder::parseDHT()
     imgfile_.read(reinterpret_cast<char*>(&lenSeg), 2);
     lenSeg = htons(lenSeg);
     
-    int segmentEnd = (int)imgfile_.tellg() + (int)lenSeg - 2;
+    int segmentEnd = (int)imgfile_.tellg() + lenSeg - 2;
     while(imgfile_.tellg() < segmentEnd)
     {
         Uint8 tableInfo;
@@ -439,10 +439,11 @@ JPEGDecoder::ResultCode JPEGDecoder::parseSOS()
 
     imageMetadata_.channels = channels;
 
+    Uint16 compInfo;
     for(int i = 0; i <  channels; ++i)
     {
-        Uint16 compInfo;
         imgfile_.read(reinterpret_cast<char*>(&compInfo), 2);
+        compInfo = htons(compInfo);
     }
 
     /// skip [00], [3F], [00]
@@ -516,6 +517,8 @@ JPEGDecoder::ResultCode JPEGDecoder::decodeData()
     int it = 0;
     int chan = imageMetadata_.channels;
     std::size_t MCUcount = (imageMetadata_.height * imageMetadata_.width) / 64;
+    mcu_.clear();
+
     for(std::size_t i = 0; i < MCUcount; ++i)
     {
         std::vector<std::vector<int>> RLE(chan);

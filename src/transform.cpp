@@ -56,7 +56,6 @@ void convertYCbCrToRGB(CompareMtrices& block)
             block[2][y][x] = B;
         }
     }
-
 }
 
 void performLevelShift(CompareMtrices& block, std::vector<std::array<std::array<float, 8>, 8>> IDCTCoeffs)
@@ -71,7 +70,6 @@ void performLevelShift(CompareMtrices& block, std::vector<std::array<std::array<
             }
         }
     }
-
 }
 
 }

@@ -4,6 +4,8 @@
 
 namespace imp
 {
+std::vector<int> MCU::DCDiff_ = {};
+
 MCU::MCU()
 {
 
@@ -11,7 +13,11 @@ MCU::MCU()
 
 MCU::MCU(const std::vector<std::vector<int>>& RLE, const std::vector<std::vector<Uint16>>& QTable) : QTable_(QTable)
 {
-    DCDiff_ = std::vector<int>(RLE.size());
+    if(DCDiff_.empty())
+    {
+        DCDiff_ = std::vector<int>(RLE.size());
+        std::fill(DCDiff_.begin(), DCDiff_.end(), 0);
+    }
     IDCTCoeffs_ = std::vector<std::array<std::array<float, 8>, 8>>(RLE.size());
     block_ = CompareMtrices(RLE.size());
 
