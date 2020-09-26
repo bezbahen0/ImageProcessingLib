@@ -3,19 +3,11 @@
 
 #include "types.hpp"
 
+#include <tuple>
+#include <stdexcept>
+
 namespace imp
 {
-struct Size
-{
-    int width;
-    int height;
-    Size() : width(0), height(0)
-    {
-    }
-    Size(int width, int height) : width(width), height(height)
-    {
-    }
-};
 // need overrload operator= to prevent memory leaks and implements clone function
 class Mat
 {
@@ -40,13 +32,19 @@ public:
     template<typename T>
     T& at(int rows, int cols)
     {
-        return reinterpret_cast<T&>(data_[rows_ * rows + cols]);
+        if((std::tie(rows_, cols_)) < std::tie(rows, cols))
+            throw std::out_of_range("(rows or cols) > (rows_ or cols_)");
+
+        return *(data_ + rows_ * rows + cols);
     }
 
     template<typename T>
     T& at(int rows, int cols, int channels)
     {
-        return reinterpret_cast<T&>(data_[channels * (channels_ * 2) + rows_ * rows + cols]);
+        if(std::tie(rows_, cols_, channels_) < std::tie(rows, cols, channels))
+            throw std::out_of_range("(rows or cols or channels) > (rows_ or cols_ or channels_)"); 
+
+        return *(data_ + (channels * rows_ * cols_) + (cols * rows_) + rows);
     }
 
     static Mat zeros(int rows, int cols, int depth, int channels);

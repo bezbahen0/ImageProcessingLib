@@ -82,7 +82,7 @@ Mat JPEGDecoder::createImageWithMCU(std::vector<MCU>& MCU)
     int height = imageMetadata_.height % 8 == 0 ? imageMetadata_.height : imageMetadata_.height + 8 - (imageMetadata_.height % 8); 
    
     int count = 0;
-    Mat mat(height,width, 1, imageMetadata_.channels);
+    Mat mat(height, width, 1, imageMetadata_.channels);
     for(int y = 0; y <= width - 8; y += 8)
     {
         for(int x = 0; x <= height - 8; x += 8)
@@ -94,7 +94,7 @@ Mat JPEGDecoder::createImageWithMCU(std::vector<MCU>& MCU)
                 {
                     for(int i = 0; i < imageMetadata_.channels; ++i)
                     {
-                        mat.at<Uint16>(y + v, x + u, i) = block[i][v][u];
+                        mat.at<Uint8>(y + v, x + u, i) = block[i][v][u];
                     }
                 }
             }
@@ -289,7 +289,6 @@ JPEGDecoder::ResultCode JPEGDecoder::parseCOM()
 
     Uint8 byte;
     std::string comment;
-    int size = (int)len - 2;
     int endPos = (int)imgfile_.tellg() + (int)len - 2;
     while(imgfile_.tellg() < endPos)
     {
@@ -487,7 +486,7 @@ JPEGDecoder::ResultCode JPEGDecoder::byteScanData()
     if(imageData_.empty())
         return ResultCode::DECODE_INCOMPLETE;
 
-    for(std::size_t i = 0; i < imageData_.size() - 8; i += 8)
+    for(std::size_t i = 0; i <= imageData_.size() - 8; i += 8)
     {
         std::string temp = imageData_.substr(i, 8);
         
