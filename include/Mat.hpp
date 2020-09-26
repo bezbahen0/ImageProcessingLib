@@ -35,7 +35,7 @@ public:
         if((std::tie(rows_, cols_)) < std::tie(rows, cols))
             throw std::out_of_range("(rows or cols) > (rows_ or cols_)");
 
-        return *(data_ + rows_ * rows + cols);
+        return (T&)data_[rows_ * rows + cols];
     }
 
     template<typename T>
@@ -44,7 +44,7 @@ public:
         if(std::tie(rows_, cols_, channels_) < std::tie(rows, cols, channels))
             throw std::out_of_range("(rows or cols or channels) > (rows_ or cols_ or channels_)"); 
 
-        return *(data_ + (channels * rows_ * cols_) + (cols * rows_) + rows);
+        return (T&)data_[(channels * rows_ * cols_) + (cols * rows_) + rows];
     }
 
     static Mat zeros(int rows, int cols, int depth, int channels);
